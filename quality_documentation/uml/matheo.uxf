@@ -1,0 +1,17 @@
+<diagram program="umletino" version="14.3.0"><zoom_level>10</zoom_level><element><id>UMLPackage</id><coordinates><x>0</x><y>126</y><w>1980</w><h>530</h></coordinates><panel_attributes>matheo python package</panel_attributes><additional_attributes></additional_attributes></element><element><id>UMLClass</id><coordinates><x>300</x><y>196</y><w>250</w><h>80</h></coordinates><panel_attributes>ToeplitzMatrix
+--
+</panel_attributes><additional_attributes></additional_attributes></element><element><id>UMLPackage</id><coordinates><x>290</x><y>166</y><w>270</w><h>440</h></coordinates><panel_attributes>linear algebra</panel_attributes><additional_attributes></additional_attributes></element><element><id>UMLPackage</id><coordinates><x>10</x><y>166</y><w>270</w><h>440</h></coordinates><panel_attributes>optimisation</panel_attributes><additional_attributes></additional_attributes></element><element><id>UMLPackage</id><coordinates><x>570</x><y>166</y><w>270</w><h>440</h></coordinates><panel_attributes>statistics</panel_attributes><additional_attributes></additional_attributes></element><element><id>UMLPackage</id><coordinates><x>854</x><y>166</y><w>270</w><h>440</h></coordinates><panel_attributes>random</panel_attributes><additional_attributes></additional_attributes></element><element><id>UMLPackage</id><coordinates><x>1134</x><y>166</y><w>270</w><h>440</h></coordinates><panel_attributes>Utilities</panel_attributes><additional_attributes></additional_attributes></element><element><id>UMLPackage</id><coordinates><x>1414</x><y>166</y><w>270</w><h>440</h></coordinates><panel_attributes>calculus</panel_attributes><additional_attributes></additional_attributes></element><element><id>UMLPackage</id><coordinates><x>1700</x><y>166</y><w>270</w><h>440</h></coordinates><panel_attributes>structured covariance matrices</panel_attributes><additional_attributes></additional_attributes></element><element><id>UMLClass</id><coordinates><x>580</x><y>196</y><w>250</w><h>80</h></coordinates><panel_attributes>GenerateMCSamples
+--
+</panel_attributes><additional_attributes></additional_attributes></element><element><id>UMLClass</id><coordinates><x>860</x><y>196</y><w>250</w><h>80</h></coordinates><panel_attributes>RandomNumberGenerator
+--
+</panel_attributes><additional_attributes></additional_attributes></element><element><id>UMLClass</id><coordinates><x>300</x><y>286</y><w>250</w><h>80</h></coordinates><panel_attributes>MatrixConversions
+--
+</panel_attributes><additional_attributes></additional_attributes></element><element><id>UMLClass</id><coordinates><x>20</x><y>196</y><w>250</w><h>80</h></coordinates><panel_attributes>Class
+--
+</panel_attributes><additional_attributes></additional_attributes></element><element><id>UMLClass</id><coordinates><x>1140</x><y>196</y><w>250</w><h>80</h></coordinates><panel_attributes>Class
+--
+</panel_attributes><additional_attributes></additional_attributes></element><element><id>UMLClass</id><coordinates><x>1420</x><y>196</y><w>250</w><h>80</h></coordinates><panel_attributes>Class
+--
+</panel_attributes><additional_attributes></additional_attributes></element><element><id>UMLClass</id><coordinates><x>1710</x><y>196</y><w>250</w><h>80</h></coordinates><panel_attributes>Class
+--
+</panel_attributes><additional_attributes></additional_attributes></element></diagram>
