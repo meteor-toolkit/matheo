@@ -52,8 +52,6 @@ cache:
     - virtualenv venv
     - source venv/bin/activate
     - pip install .[dev]
-    - python -c "import numpy;print(numpy.__version__)"
-
 
 ### Linting ###
 
@@ -87,7 +85,6 @@ mypy:
     - ls -l
     - export PYTHONPATH="$PYTHONPATH:."
     - python -c "import sys;print(sys.path)"
-    - python -c "import numpy;print(numpy.__version__)"
     - pip install tox
     - mkdir test_report
     - tox
