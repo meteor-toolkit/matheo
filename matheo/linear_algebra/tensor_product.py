@@ -17,13 +17,12 @@ __email__ = "pieter.de.vis@npl.co.uk"
 __status__ = "Development"
 
 
-class ClassName:
+class TensorProduct:
     def __init__(
         self,
         something
     ):
         self.something = something
 
-    def function1(self, argument1, argument2):
+    def function1(self,argument1,argument2):
         return argument1+argument2
-        
