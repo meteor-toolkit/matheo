@@ -17,6 +17,12 @@ __maintainer__ = "Pieter De Vis"
 __email__ = "pieter.de.vis@npl.co.uk"
 __status__ = "Development"
 
+
+""" 
+I have not put these functions in a class as like this they are more easily importable. 
+We might need to change this later on."""
+
+
 def nearestPD_cholesky(A, diff=0.001, corr=False, return_cholesky=True):
     """
     Find the nearest positive-definite matrix
