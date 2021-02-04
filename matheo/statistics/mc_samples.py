@@ -2,11 +2,12 @@
 
 """___Built-In Modules___"""
 import matheo.linear_algebra.matrix_conversion as conv
+
 """___Third-Party Modules___"""
 import numpy as np
 
 """___NPL Modules___"""
-#import here
+# import here
 
 """___Authorship___"""
 __author__ = "Pieter De Vis"
@@ -17,10 +18,7 @@ __status__ = "Development"
 
 
 class MCSamples:
-    def __init__(
-        self,
-        MCsteps
-    ):
+    def __init__(self, MCsteps):
         self.MCsteps = MCsteps
 
     def generate_samples_correlated(self, param, u_param, corr_param):
@@ -182,7 +180,7 @@ class MCSamples:
             stds = np.array([np.std(samples[i]) for i in range(len(samples))])
 
             # We normalise the samples with the mean and std, then apply Cholesky, and finally reapply the mean and std.
-            print(means.shape,stds.shape,samples.shape)
+            print(means.shape, stds.shape, samples.shape)
             if all(stds != 0):
                 return np.dot(L, (samples - means) / stds) * stds + means
 

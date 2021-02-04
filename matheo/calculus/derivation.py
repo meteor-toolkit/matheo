@@ -1,7 +1,7 @@
 """describe class"""
 
 """___Built-In Modules___"""
-#import here
+# import here
 
 """___Third-Party Modules___"""
 import warnings
@@ -9,7 +9,7 @@ import numdifftools as nd
 import numpy as np
 
 """___NPL Modules___"""
-#import here
+# import here
 
 """___Authorship___"""
 __author__ = "Pieter De Vis"
@@ -20,10 +20,7 @@ __status__ = "Development"
 
 
 class ClassName:
-    def __init__(
-        self,
-        something
-    ):
+    def __init__(self, something):
         self.something = something
 
     def calculate_Jacobian(self, fun, x, Jx_diag=False, step=None):
