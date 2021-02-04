@@ -18,8 +18,8 @@ __status__ = "Development"
 
 
 class TestClassName(unittest.TestCase):
-    def test_function1(self, argument1, argument2):
-        return pass
+    def test_function1(self):
+        pass
 
 if __name__ == "__main__":
     unittest.main()
