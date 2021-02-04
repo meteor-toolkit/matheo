@@ -1,13 +1,14 @@
 """describe class"""
 
-"""___Built-In Modules___"""
-import matheo.linear_algebra.matrix_conversion as conv
 
 """___Third-Party Modules___"""
 import numpy as np
 
 """___NPL Modules___"""
 # import here
+
+"""___Built-In Modules___"""
+import matheo.linear_algebra.matrix_conversion as conv
 
 """___Authorship___"""
 __author__ = "Pieter De Vis"

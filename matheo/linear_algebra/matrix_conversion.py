@@ -4,8 +4,8 @@
 # import here
 
 """___Third-Party Modules___"""
-import numpy as np
 import warnings
+import numpy as np
 
 """___NPL Modules___"""
 # import here
@@ -16,13 +16,6 @@ __created__ = "01/02/2021"
 __maintainer__ = "Pieter De Vis"
 __email__ = "pieter.de.vis@npl.co.uk"
 __status__ = "Development"
-
-
-# class MatrixConvertion:
-#     def __init__(self):
-#         pass
-""" I have not put these functions in a class as like this they are more easily importable. We might need to change this later on."""
-
 
 def nearestPD_cholesky(A, diff=0.001, corr=False, return_cholesky=True):
     """
