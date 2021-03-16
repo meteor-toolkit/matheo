@@ -3,7 +3,7 @@
 """___Built-In Modules___"""
 import numpy as np
 import numpy.matlib
-from scipy import fft, ifft
+from scipy.fft import fft, ifft
 import sys
 
 """___Third-Party Modules___"""
