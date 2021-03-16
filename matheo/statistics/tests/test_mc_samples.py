@@ -3,7 +3,7 @@
 """___Built-In Modules___"""
 from matheo.statistics.mc_samples import MCSamples
 import matheo.linear_algebra.matrix_conversion as conv
-
+from matheo.linear_algebra.toeplitz import Toeplitz
 """___Third-Party Modules___"""
 import unittest
 import numpy as np
