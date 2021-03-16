@@ -46,19 +46,19 @@ class TensorProduct:
 
         n[N-1] = self.Q[N-1].shape[0]
 
-        for i in np.arange(N-1, -1, -1):
+        for i in range(N-1, -1, -1):
             base = 0
             jump = n[i]*nright
-            for k in np.arange(nleft):
-                for j in np.arange(nright):
+            for k in range(nleft):
+                for j in range(nright):
                     index1 = base + j
                     index2 = base + j + nright*(n[i] - 1) + 1
                     index1 = int(index1)
                     index2 = int(index2)
                     nright = int(nright)
-                    if len(np.shape(self.Q[i])) == 2:
+                    if self.Q[i].ndim == 2:
                         self.x[index1:index2:nright] = np.matmul(self.Q[i], self.x[index1:index2:nright])
-                    elif len(np.shape(self.Q[i])) == 1:
+                    elif self.Q[i].ndim == 1:
                         tclass = Toeplitz(self.x[index1:index2:nright], self.Q[i])
                         self.x[index1:index2:nright] = tclass.toepfftmult()
                     else:

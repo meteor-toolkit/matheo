@@ -37,12 +37,12 @@ class Toeplitz:
         """
 
         # Get size of x vector or matrix and create a padded y matrix of double the length
-        lx = len(np.shape(self.x))
+        lx = self.x.ndim
         if lx == 2:
-            n, m = np.shape(self.x)
+            n, m = self.x.shape
             y = np.concatenate((self.x, np.zeros(self.x.shape)), axis=1)
         elif lx == 1:
-            m = np.shape(self.x)[0]
+            m = self.x.shape[0]
             n = 1
             y = np.concatenate((self.x, np.zeros(self.x.shape)))
         else:
