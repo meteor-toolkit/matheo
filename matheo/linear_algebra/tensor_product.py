@@ -34,17 +34,20 @@ class TensorProduct:
         Created: 08-02-2021
         """
 
+        # Initialisation
         N = len(Q)
         n = np.zeros(N)
         nright = 1
         nleft = 1
 
+        # Determining what the total size of the kron matrix would be
         for i in range(N-1):
             n[i] = Q[i].shape[0]
             nleft = int(nleft*n[i])
 
         n[N-1] = Q[N-1].shape[0]
 
+        # Doing the matrix multiplication from right to left
         for i in range(N-1, -1, -1):
             base = 0
             jump = n[i]*nright
@@ -55,6 +58,7 @@ class TensorProduct:
                     index1 = int(index1)
                     index2 = int(index2)
                     nright = int(nright)
+                    # If Q is a matrix then matmul is used, if Q is a vector then it is assumed that Q is toeplitz and FFT mult is used
                     if Q[i].ndim == 2:
                         x[index1:index2:nright] = np.matmul(Q[i], x[index1:index2:nright])
                     elif Q[i].ndim == 1:
@@ -62,6 +66,8 @@ class TensorProduct:
                         x[index1:index2:nright] = tclass.toepfftmult(x[index1:index2:nright], Q[i])
                     else:
                         sys.exit('Funky dimension of Q!')
+
+                # update variables
                 base = base + jump
             nleft = int(nleft/n[np.max(i-1, 0)])
             nright = int(nright*n[i])
