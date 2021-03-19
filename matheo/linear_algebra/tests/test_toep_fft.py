@@ -13,11 +13,11 @@ x2 = np.array([[5, 1, 4, 3], [3, 5, 2, 1]])
 class TestToeplitz(unittest.TestCase):
 
     def test_toepfftmult(self):
-        Tclass = Toeplitz(x2, K)
+        Tclass = Toeplitz()
 
         expected_result = np.array([[64., 27., 55., 44.],
                                     [40., 53., 33., 32.]])
-        result = Tclass.toepfftmult()
+        result = Tclass.toepfftmult(x2, K)
 
         np.testing.assert_array_almost_equal(result, expected_result, decimal=3)
 
