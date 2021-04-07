@@ -60,10 +60,20 @@ class TensorProduct:
                     nright = int(nright)
                     # If Q is a matrix then matmul is used, if Q is a vector then it is assumed that Q is toeplitz and FFT mult is used
                     if Q[i].ndim == 2:
-                        x[index1:index2:nright] = np.matmul(Q[i], x[index1:index2:nright])
+                        if x.ndim == 1:
+                            x[index1:index2:nright] = np.matmul(Q[i], x[index1:index2:nright])
+                        elif x.ndim == 2:
+                            x[:, index1:index2:nright] = np.matmul(Q[i], x[:, index1:index2:nright])
+                        else:
+                            sys.exit('Funk dimension of x')
                     elif Q[i].ndim == 1:
                         tclass = Toeplitz()
-                        x[index1:index2:nright] = tclass.toepfftmult(x[index1:index2:nright], Q[i])
+                        if x.ndim == 1:
+                            x[index1:index2:nright] = tclass.toepfftmult(x[index1:index2:nright], Q[i])
+                        elif x.ndim == 2:
+                            x[:, index1:index2:nright] = tclass.toepfftmult(x[:, index1:index2:nright], Q[i])
+                        else:
+                            sys.exit('Funk dimension of x')
                     else:
                         sys.exit('Funky dimension of Q!')
 
