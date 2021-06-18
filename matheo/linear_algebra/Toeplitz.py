@@ -49,10 +49,10 @@ class Toeplitz:
 
         # Build circulant vector from Toeplitz vector and take fft
         ct = np.concatenate((K, np.zeros(1), K[:0:-1])).T
-        fc = np.matlib.repmat(fft(ct), n, 1)[0]
+        fc = np.matlib.repmat(fft.fft(ct), n, 1)[0]
 
         # FFT multiplication
-        cy = ifft(np.multiply(fc, fft(y)))
+        cy = ifft(np.multiply(fc, fft.fft(y)))
         cy = cy.real
         if n == 1:
             return cy[0:m]
