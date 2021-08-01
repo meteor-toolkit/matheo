@@ -7,7 +7,6 @@ from scipy.stats import norm
 from typing import Union, Callable, Iterator, Tuple
 
 
-
 __author__ = "Sam Hunt"
 __created__ = "27/10/2020"
 
@@ -92,12 +91,13 @@ def f_normalised(f: Callable, x: np.ndarray, *args, high_res_sampling: float = 0
     return y
 
 
-def return_fs(
+def repeat_f(
+    f: Callable,
     centres: np.ndarray,
     widths: np.ndarray,
+    normalise: bool = False,
     x_sampling: float = 0.01,
-    shape: str = "triangular",
-    normalise: bool = True,
+    xlim_width: float = 3.0
 ) -> Tuple[np.ndarray, np.ndarray]:
     """
     Evaluates repeating functions along a coordinate axis
@@ -106,33 +106,36 @@ def return_fs(
         Defines all function on common x coordinates, so may use a lot of memory if many bands defined with x sampling.
         For a lower memory solution try **matheo.utils.function_def.iter_fs()**..
 
+    :param f: function to repeat
     :param centres: function centres
     :param widths: function widths
-    :param x_sampling: sampling along function coordinates
-    :param shape: function shape
     :param normalise: (default True) switch to define if area of return SRFs should be normalised to 1
+    :param x_sampling: sampling along function coordinates
+    :param xlim_width: (default 3) multiple function widths to define function over
 
     :return: evaluated functions
     :return: evaluated function coordinates
     """
 
     fs = RepeatingFuncUtil(
+        f=f,
         centres=centres,
         widths=widths,
-        x_sampling=x_sampling,
-        shape=shape,
         normalise=normalise,
+        x_sampling=x_sampling,
+        xlim_width=xlim_width
     )
 
     return fs.return_fs()
 
 
-def iter_fs(
+def iter_f(
+    f: Callable,
     centres: np.ndarray,
     widths: np.ndarray,
+    normalise: bool = False,
     x_sampling: float = 0.01,
-    shape: str = "triangular",
-    normalise: bool = True,
+    xlim_width: float = 3.0
 ) -> Iterator:
     """
     Returns iterator to evaluate repeating functions along a coordinate axis
@@ -140,21 +143,23 @@ def iter_fs(
     .. note::
         Offers a lower memory solution to **matheo.utils.function_def.return_fs()**.
 
+    :param f: function to repeat
     :param centres: distribution centres
     :param widths: distribution widths
-    :param x_sampling: sampling along function coordinates
-    :param shape: function shape
     :param normalise: (default True) switch to define if area of return SRFs should be normalised to 1
+    :param x_sampling: sampling along function coordinates
+    :param xlim_width: (default 3) multiple function widths to define function over
 
     :return: repeating function iterator
     """
 
     fs = RepeatingFuncUtil(
+        f=f,
         centres=centres,
         widths=widths,
-        x_sampling=x_sampling,
-        shape=shape,
         normalise=normalise,
+        x_sampling=x_sampling,
+        xlim_width=xlim_width
     )
 
     return iter(fs)
@@ -164,59 +169,31 @@ class RepeatingFuncUtil:
     """
     Helper class to define repeating functions along a coordinate axis
 
+    :param f: function to repeat
     :param centres: distribution centres
     :param widths: distribution widths
-    :param x_sampling: sampling along function coordinates
-    :param shape: function shape
     :param normalise: (default True) switch to define if area of return SRFs should be normalised to 1
+    :param x_sampling: sampling along function coordinates
+    :param xlim_width: (default 3) multiple function widths to define function over
     """
 
     def __init__(
         self,
+        f: Callable,
         centres: np.ndarray,
         widths: np.ndarray,
+        normalise: bool = False,
         x_sampling: float = 0.01,
-        shape: str = "triangular",
-        normalise: bool = True,
+        xlim_width: float = 3.0
     ):
 
         # Set attributes from arguments
+        self.f = f
         self.centres = centres
         self.widths = widths
-        self.x_sampling = x_sampling
         self.normalise = normalise
-
-        # Evaluate x limit
-        self.bandlim = self.return_bandlim(self.widths, self.shape)
-
-        # Get function
-        self.f = self.return_func(shape)
-
-    @staticmethod
-    def return_func(shape):
-        if shape == "triangular":
-            return f_triangle
-
-        if shape == "gaussian":
-            return f_gaussian
-
-    @staticmethod
-    def return_bandlim(width: Union[float, np.ndarray], shape: str) -> Union[float, np.ndarray]:
-        """
-        Returns half width of x range required to define f(x) of given shape and width
-
-        :param width: function width(s)
-        :param shape: functional form of f
-
-        :return: f definition half width(s)
-        """
-
-        bandlim = 3 * width
-        if shape == "triangular":
-            bandlim = width
-        elif shape == "tophat":
-            bandlim = width / 2.0
-        return bandlim
+        self.x_sampling = x_sampling
+        self.xlim_width = xlim_width
 
     def return_fs(self) -> Tuple[np.ndarray, np.ndarray]:
         """
@@ -227,8 +204,8 @@ class RepeatingFuncUtil:
         """
 
         x = np.arange(
-            min(self.centres - self.bandlim),
-            max(self.centres + self.bandlim),
+            min(self.centres - self.xlim_width * self.widths),
+            max(self.centres + self.xlim_width * self.widths + 1),
             self.x_sampling,
         )
 
@@ -264,8 +241,8 @@ class RepeatingFuncUtil:
             width = self.widths[self.i]
 
             x = np.arange(
-                centre - self.bandlim[self.i],
-                centre + self.bandlim[self.i],
+                centre - self.xlim_width * width,
+                centre + self.xlim_width * width + 1,
                 self.x_sampling,
             )
 
