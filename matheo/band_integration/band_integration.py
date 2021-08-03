@@ -2,14 +2,14 @@
 Functions to band integrate spectra for given spectral response function.
 """
 
-from spectral_integration.read_srf import (
+from matheo.band_integration.utils import (
     return_srf,
     return_band_centres,
     return_band_names,
 )
 
-from matheo.band_integration.utils import cutout_nonzero, func_with_unc
-from matheo.utils.function_def import iter_fs
+from matheo.utils.punpy_util import func_with_unc
+from matheo.utils.function_def import iter_f, f_tophat, f_triangle, f_gaussian
 import numpy as np
 from typing import Union, Tuple
 from matheo.interpolation.interpolation import interpolate
@@ -19,9 +19,42 @@ __author__ = "Sam Hunt"
 __created__ = "30/7/2021"
 
 
+def cutout_nonzero(y, x, buffer=0.2):
+    """
+    Returns continuous non-zero part of function y(x)
+
+    :type y: numpy.ndarray
+    :param y: function data values
+
+    :type x: numpy.ndarray
+    :param x: function coordinate data values
+
+    :type buffer: float
+    :param buffer: fraction of non-zero section of y to include as buffer on either side (default: 0.2)
+    """
+
+    # Find extent of non-zero region
+    idx = np.nonzero(y)
+    imin = min(idx[0])
+    imax = max(idx[0]) + 1
+
+    # Determine buffer
+    width = imax - imin
+
+    imin -= int(width * buffer)
+    imax += int(width * buffer)
+
+    imin = imin if imin >= 0 else 0
+    imax = imax if imax <= len(y) else len(y)
+
+    return y[imin:imax], x[imin:imax], [imin, imax]
+
+
 def _band_int(d: np.ndarray, x: np.ndarray, r: np.ndarray, x_r: np.ndarray) -> float:
     """
     Returns integral of data array over a response band (i.e., d(x) * r(x_r))
+
+    N.B.: This function is intended to be wrapped, so it can be applied to an array and run within punpy
 
     :param d: data to be band integrated
     :param x: data coordinates
@@ -59,6 +92,8 @@ def _band_int_arr(d: np.ndarray, x: np.ndarray, r: np.ndarray, x_r: np.ndarray, 
     """
     Band integrates multi-dimensional data array along x axis
 
+    N.B.: This function is intended to be wrapped, so it can be run within punpy
+
     :param d: data to be band integrated
     :param x: data coordinates along band integration axis
     :param r: band response function
@@ -66,7 +101,11 @@ def _band_int_arr(d: np.ndarray, x: np.ndarray, r: np.ndarray, x_r: np.ndarray, 
     :param d_axis_x: (default 0) x axis in data array
     :return: band integrated data
     """
-    return np.apply_along_axis(_band_int, d_axis_x, d, x, r, x_r)
+
+    if d.ndim == 1:
+        return np.array([_band_int(d, x=x, r=r, x_r=x_r)])
+
+    return np.apply_along_axis(_band_int, d_axis_x, arr=d, x=x, r=r, x_r=x_r)
 
 
 def _band_int2d_arr(
@@ -83,6 +122,8 @@ def _band_int2d_arr(
     """
     Sequentially band integrates multi-dimensional data array along x axis and y axis
 
+    N.B.: This function is intended to be wrapped, so it can be run within punpy
+
     :param d: data to be band integrated
     :param x: data coordinates along first band integration axis
     :param y: data coordinates along second band integration axis
@@ -95,8 +136,8 @@ def _band_int2d_arr(
     :return: band integrated data
     """
 
-    d_intx = np.apply_along_axis(_band_int, d_axis_x, d, x, rx, x_rx)
-    d_intx_inty = np.apply_along_axis(_band_int, d_axis_y, d_intx, y, ry, y_ry)
+    d_intx = _band_int_arr(d, x=x, r=rx, x_r=x_rx, d_axis_x=d_axis_x)
+    d_intx_inty = _band_int_arr(d_intx, x=y, r=ry, x_r=y_ry, d_axis_x=d_axis_y)
 
     return d_intx_inty
 
@@ -119,6 +160,8 @@ def _band_int3d_arr(
     """
     Sequentially band integrates multi-dimensional data array along x, y and z axes
 
+    N.B.: This function is intended to be wrapped, so it can be run within punpy
+
     :param d: data to be band integrated
     :param x: data coordinates along first band integration axis
     :param y: data coordinates along second band integration axis
@@ -135,9 +178,9 @@ def _band_int3d_arr(
     :return: band integrated data
     """
 
-    d_intx = np.apply_along_axis(_band_int, d_axis_x, d, x, rx, x_rx)
-    d_intx_inty = np.apply_along_axis(_band_int, d_axis_y, d_intx, y, ry, y_ry)
-    d_intx_inty_intz = np.apply_along_axis(_band_int, d_axis_z, d_intx_inty, z, rz, z_rz)
+    d_intx = _band_int_arr(d, x=x, r=rx, x_r=x_rx, d_axis_x=d_axis_x)
+    d_intx_inty = _band_int_arr(d_intx, x=y, r=ry, x_r=y_ry, d_axis_x=d_axis_y)
+    d_intx_inty_intz = _band_int_arr(d_intx_inty, x=z, r=rz, x_r=z_rz, d_axis_x=d_axis_z)
 
     return d_intx_inty_intz
 
@@ -152,7 +195,7 @@ def band_int(
     u_x: Union[None, float, np.ndarray] = None,
     u_r: Union[None, float, np.ndarray] = None,
     u_x_r: Union[None, float, np.ndarray] = None,
-) -> Union[float, np.ndarray]:
+) -> Union[float, np.ndarray, Tuple[Union[float, np.ndarray], Union[float, np.ndarray]]]:
     """
     Returns integral of data array over a response band (i.e., d(x) * r(x_r))
 
@@ -161,26 +204,25 @@ def band_int(
     :param r: band response function
     :param x_r: band response function coordinates
     :param d_axis_x: (default 0) if d greater than 1D, specify axis to band integrate along
-    :param u_d: uncertainty in data
-    :param u_x: uncertainty in data coordinates
-    :param u_r: uncertainty in band response function
-    :param u_x_r: uncertainty in band response function coordinates
+    :param u_d: (optional) uncertainty in data
+    :param u_x: (optional) uncertainty in data coordinates
+    :param u_r: (optional) uncertainty in band response function
+    :param u_x_r: (optional) uncertainty in band response function coordinates
 
     :return: band integrated data
+    :return: uncertainty of band integrated data (skipped if no input uncertainties provided)
     """
 
-    return func_with_unc(
+    d_band, u_d_band = func_with_unc(
         _band_int_arr,
-        d=d,
-        x=x,
-        r=r,
-        x_r=x_r,
-        d_axis_x=d_axis_x,
-        u_d=u_d,
-        u_x=u_x,
-        u_r=u_r,
-        u_x_r=u_x_r,
+        params=dict(d=d, x=x, r=r, x_r=x_r, d_axis_x=d_axis_x),
+        u_params=dict(u_d=u_d, u_x=u_x, u_r=u_r, u_x_r=u_x_r)
     )
+
+    if u_d_band is None:
+        return d_band
+
+    return d_band, u_d_band
 
 
 def band_int2d(
@@ -200,7 +242,7 @@ def band_int2d(
         u_x_rx: Union[None, float, np.ndarray] = None,
         u_ry: Union[None, float, np.ndarray] = None,
         u_y_ry: Union[None, float, np.ndarray] = None
-) -> Union[float, np.ndarray]:
+) -> Union[float, np.ndarray, Tuple[Union[float, np.ndarray], Union[float, np.ndarray]]]:
     """
     Sequentially band integrates multi-dimensional data array along x axis and y axis
 
@@ -213,36 +255,28 @@ def band_int2d(
     :param y_ry: second band response function coordinates
     :param d_axis_x: (default 0) x axis in data array
     :param d_axis_y: (default 1) y axis in data array
-    :param u_d: uncertainty in data
-    :param u_x: uncertainty in data coordinates along first band integration axis
-    :param u_y: uncertainty in data coordinates along second band integration axis
-    :param u_rx: uncertainty in first band response function
-    :param u_x_rx: uncertainty in first band response function coordinates
-    :param u_ry: uncertainty in second band response function
-    :param u_y_ry: uncertainty in second band response function coordinates
+    :param u_d: (optional) uncertainty in data
+    :param u_x: (optional) uncertainty in data coordinates along first band integration axis
+    :param u_y: (optional) uncertainty in data coordinates along second band integration axis
+    :param u_rx: (optional) uncertainty in first band response function
+    :param u_x_rx: (optional) uncertainty in first band response function coordinates
+    :param u_ry: (optional) uncertainty in second band response function
+    :param u_y_ry: (optional) uncertainty in second band response function coordinates
 
     :return: band integrated data
+    :return: uncertainty of band integrated data (skipped if no input uncertainties provided)
     """
 
-    return func_with_unc(
+    d_band, u_d_band = func_with_unc(
         _band_int_arr,
-        d=d,
-        x=x,
-        y=y,
-        rx=rx,
-        x_rx=x_rx,
-        ry=ry,
-        y_ry=y_ry,
-        d_axis_x=d_axis_x,
-        d_axis_y=d_axis_y,
-        u_d=u_d,
-        u_x=u_x,
-        u_y=u_y,
-        u_rx=u_rx,
-        u_x_rx=u_x_rx,
-        u_ry=u_ry,
-        u_y_ry=u_y_ry
+        params=dict(d=d, x=x, y=y, rx=rx, x_rx=x_rx, ry=ry, y_ry=y_ry, d_axis_x=d_axis_x, d_axis_y=d_axis_y),
+        u_params=dict(d=u_d, x=u_x, y=u_y, rx=u_rx, x_rx=u_x_rx, ry=u_ry, y_ry=u_y_ry)
     )
+
+    if u_d_band is None:
+        return d_band
+
+    return d_band, u_d_band
 
 
 def band_int3d(
@@ -269,7 +303,7 @@ def band_int3d(
     u_y_ry: Union[None, float, np.ndarray] = None,
     u_rz: Union[None, float, np.ndarray] = None,
     u_z_rz: Union[None, float, np.ndarray] = None
-) -> Union[float, np.ndarray]:
+) -> Union[float, np.ndarray, Tuple[Union[float, np.ndarray], Union[float, np.ndarray]]]:
     """
     Sequentially band integrates multi-dimensional data array along x, y and z axes
 
@@ -286,22 +320,22 @@ def band_int3d(
     :param d_axis_x: (default 0) x axis in data array
     :param d_axis_y: (default 1) y axis in data array
     :param d_axis_z: (default 2) z axis in data array
-    :param u_d: uncertainty in data
-    :param u_x: uncertainty in data coordinates along first band integration axis
-    :param u_y: uncertainty in data coordinates along second band integration axis
-    :param u_z: uncertainty in data coordinates along third band integration axis
-    :param u_rx: uncertainty in first band response function
-    :param u_x_rx: uncertainty in first band response function coordinates
-    :param u_ry: uncertainty in second band response function
-    :param u_y_ry: uncertainty in second band response function coordinates
-    :param u_rz: uncertainty in second band response function
-    :param u_z_rz: uncertainty in third band response function coordinates
+    :param u_d: (optional) uncertainty in data
+    :param u_x: (optional) uncertainty in data coordinates along first band integration axis
+    :param u_y: (optional) uncertainty in data coordinates along second band integration axis
+    :param u_z: (optional) uncertainty in data coordinates along third band integration axis
+    :param u_rx: (optional) uncertainty in first band response function
+    :param u_x_rx: (optional) uncertainty in first band response function coordinates
+    :param u_ry: (optional) uncertainty in second band response function
+    :param u_y_ry: (optional) uncertainty in second band response function coordinates
+    :param u_rz: (optional) uncertainty in second band response function
+    :param u_z_rz: (optional) uncertainty in third band response function coordinates
 
     :return: band integrated data
+    :return: uncertainty of band integrated data (skipped if no input uncertainties provided)
     """
 
-    return func_with_unc(
-        _band_int_arr,
+    params = dict(
         d=d,
         x=x,
         y=y,
@@ -311,24 +345,34 @@ def band_int3d(
         ry=ry,
         y_ry=y_ry,
         rz=rz,
-        z_rz=z_rz,
+        z_ry=z_rz,
         d_axis_x=d_axis_x,
         d_axis_y=d_axis_y,
-        d_axis_z=d_axis_z,
-        u_d=u_d,
-        u_x=u_x,
-        u_y=u_y,
-        u_z=u_z,
-        u_rx=u_rx,
-        u_x_rx=u_x_rx,
-        u_ry=u_ry,
-        u_y_ry=u_y_ry,
-        u_rz=u_rz,
-        u_z_rz=u_z_rz
+        d_axis_z=d_axis_z
     )
 
+    u_params = dict(
+        d=u_d,
+        x=u_x,
+        y=u_y,
+        z=u_z,
+        rx=u_rx,
+        x_rx=u_x_rx,
+        ry=u_ry,
+        y_ry=u_y_ry,
+        rz=u_rz,
+        z_rz=u_z_rz
+    )
 
-def band_int_sensor(
+    d_band, u_d_band = func_with_unc(_band_int_arr, params=params, u_params=u_params)
+
+    if u_d_band is None:
+        return d_band
+
+    return d_band, u_d_band
+
+
+def spectral_band_int_sensor(
     d: np.ndarray,
     w: np.ndarray,
     platform_name: str,
@@ -355,25 +399,22 @@ def band_int_sensor(
     sensor_band_names = return_band_names(platform_name, sensor_name)
 
     valid_idx = np.where(
-        np.logical_and(
-            sensor_band_centres < max(wl_spectrum),
-            sensor_band_centres > min(wl_spectrum),
-        )
+        np.logical_and(sensor_band_centres < max(w), sensor_band_centres > min(w))
     )[0]
+
     sensor_band_centres = sensor_band_centres[valid_idx]
     sensor_band_names = [sensor_band_names[i] for i in valid_idx]
 
     bands = np.zeros(len(sensor_band_names))
     u_bands = np.zeros(len(sensor_band_names))
     for i, band_name in enumerate(sensor_band_names):
-        if u_spectrum is None:
-            bands[i] = band_integrate(
-                spectrum,
-                wl_spectrum,
-                platform_name=platform_name,
-                sensor_name=sensor_name,
-                band_name=band_name,
-            )
+        bands[i] = band_integrate(
+            spectrum,
+            wl_spectrum,
+            platform_name=platform_name,
+            sensor_name=sensor_name,
+            band_name=band_name,
+        )
         else:
             bands[i], u_bands[i] = band_integrate(
                 spectrum,
@@ -401,7 +442,7 @@ def pixel_int(
         x: np.ndarray,
         x_pixel: np.ndarray,
         width_pixel: np.ndarray,
-        band_shape: str = "triangular",
+        band_shape: str = "triangle",
         d_axis_x: int = 0,
         u_d: Union[None, float, np.ndarray] = None,
         u_x: Union[None, float, np.ndarray] = None,
@@ -415,7 +456,7 @@ def pixel_int(
     :param x: data coordinates
     :param x_pixel: centre of band response per pixel
     :param width_pixel: width of band response per pixel
-    :param band_shape: (default triangular) band shape
+    :param band_shape: (default triangular) band shape - must be one of 'triangle', 'tophat', or 'gaussian'
     :param d_axis_x: (default 0) if d greater than 1D, specify axis pixels are along
     :param u_d: uncertainty in data
     :param u_x: uncertainty in data coordinates
@@ -428,7 +469,19 @@ def pixel_int(
     d_pixel = np.zeros(len(x_pixel))
     u_d_pixel = np.zeros(len(x_pixel))
 
-    for i, (r, x_r) in enumerate(iter_fs(x_pixel, width_pixel, shape=band_shape)):
+    if band_shape == "triangle":
+        f = f_triangle
+        xlim_width = 1
+    elif band_shape == "tophat":
+        f = f_tophat
+        xlim_width = 1
+    elif band_shape == "gaussian":
+        f = f_gaussian
+        xlim_width = 3
+    else:
+        raise ValueError("band_shape must be one of ['triangle', 'tophat', 'gaussian']")
+
+    for i, (r, x_r) in enumerate(iter_f(f, x_pixel, width_pixel, xlim_width=xlim_width)):
         d_pixel[i], u_d_pixel[i] = band_int(d, x, r, x_r, d_axis_x, u_d, u_x)
 
     return d_pixel, u_d_pixel

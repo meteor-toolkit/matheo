@@ -1,0 +1,440 @@
+"""
+Tests for band_integration module
+"""
+
+from matheo.band_integration import band_integration as bi
+from matheo.utils import function_def as fd
+import unittest
+from unittest.mock import patch, call
+import numpy as np
+
+
+"""___Authorship___"""
+__author__ = "Sam Hunt"
+__created__ = "1/8/2021"
+
+
+TEST_WL_SPECTRA = np.arange(500, 952, 2)
+TEST_SPECTRA = np.array(
+    [
+        86.40240984,
+        87.0470624,
+        87.93084099,
+        89.34519073,
+        88.9919428,
+        88.60131038,
+        87.64776277,
+        84.56509229,
+        80.20699595,
+        77.57993473,
+        79.70188401,
+        82.92151658,
+        82.80886134,
+        80.83847235,
+        81.07832761,
+        82.60714817,
+        81.57882444,
+        80.39565515,
+        81.47071281,
+        81.22992248,
+        79.38628691,
+        79.1960746,
+        80.10704642,
+        79.99129846,
+        78.99152007,
+        78.53258221,
+        78.73681595,
+        78.59562385,
+        77.4069349,
+        75.88195983,
+        75.29629964,
+        75.51243919,
+        74.94571446,
+        73.74180549,
+        73.11458274,
+        72.54168798,
+        72.24234318,
+        71.92226982,
+        70.94521004,
+        70.45248178,
+        70.99364808,
+        72.00680476,
+        72.3550522,
+        71.58434072,
+        69.98142462,
+        68.92419954,
+        70.26385016,
+        75.19944433,
+        81.83504616,
+        84.86159094,
+        84.26705631,
+        83.90527171,
+        84.47465617,
+        84.59068069,
+        83.82628876,
+        82.86556563,
+        81.64814889,
+        80.20934677,
+        79.8305731,
+        80.94084382,
+        81.73141581,
+        80.8522182,
+        79.26928993,
+        78.39712344,
+        78.15093325,
+        77.97080866,
+        78.13166684,
+        78.69433567,
+        79.47464896,
+        80.23475687,
+        80.25169924,
+        79.98833192,
+        79.82274719,
+        79.39371379,
+        78.7166021,
+        78.48135269,
+        79.04004412,
+        77.08470515,
+        73.92763009,
+        75.20355205,
+        78.27530866,
+        79.20028329,
+        78.9060233,
+        78.68683697,
+        78.68743231,
+        78.4101011,
+        78.00164631,
+        77.85004546,
+        77.71481071,
+        77.36596503,
+        77.02105272,
+        76.76404584,
+        74.76152893,
+        68.14158018,
+        64.48681771,
+        72.32108895,
+        82.55587109,
+        87.13105185,
+        88.6025905,
+        88.77327593,
+        87.87524042,
+        87.17447792,
+        87.54344993,
+        87.89064515,
+        87.78310067,
+        87.4372012,
+        86.75809996,
+        85.59221129,
+        82.45337676,
+        77.89214634,
+        76.88395498,
+        78.8209346,
+        79.04027269,
+        78.6144584,
+        78.56530008,
+        78.76360561,
+        80.1262072,
+        81.5695274,
+        81.80366939,
+        81.31974949,
+        80.66255438,
+        80.46491483,
+        81.03730472,
+        81.40129017,
+        81.10318427,
+        80.59216682,
+        80.49183472,
+        80.52269386,
+        79.50098152,
+        66.05451868,
+        40.17258215,
+        26.60884751,
+        33.40940982,
+        50.73591094,
+        66.91599287,
+        74.31876894,
+        76.12143969,
+        76.35720283,
+        76.37629724,
+        76.32542992,
+        76.03904999,
+        75.60167261,
+        75.06019506,
+        74.59689624,
+        74.14847808,
+        73.3689048,
+        72.31972623,
+        71.67775051,
+        71.8884457,
+        72.08096512,
+        71.6581701,
+        71.10508221,
+        70.76328245,
+        70.59985507,
+        70.07171878,
+        69.1986223,
+        67.97425178,
+        65.63276356,
+        63.08357537,
+        62.156023,
+        62.44737329,
+        62.65974306,
+        63.49386315,
+        64.65446038,
+        64.57515343,
+        63.91961441,
+        63.65660967,
+        64.05091569,
+        64.72807323,
+        64.9748043,
+        64.97701333,
+        64.81060187,
+        64.56459521,
+        64.51001273,
+        63.49677515,
+        62.0992306,
+        60.46544467,
+        58.73146736,
+        60.21829619,
+        62.54268154,
+        62.72533738,
+        62.59816901,
+        60.95152855,
+        58.15937556,
+        58.38529592,
+        60.43190302,
+        61.09648317,
+        60.69503418,
+        60.39087873,
+        60.25081674,
+        59.67189389,
+        59.29399198,
+        59.14432292,
+        58.75771598,
+        58.81311952,
+        58.96741475,
+        58.12570394,
+        56.19088757,
+        53.69796175,
+        50.63340289,
+        47.91125029,
+        48.85782742,
+        52.11158853,
+        51.94845901,
+        49.06416768,
+        48.18201855,
+        48.92499353,
+        48.68125047,
+        48.02615653,
+        48.55940995,
+        49.89487678,
+        50.23265632,
+        49.75751011,
+        49.00514577,
+        46.06337159,
+        39.22109244,
+        31.28268297,
+        26.6232523,
+        25.62742936,
+        28.6281889,
+        32.56591759,
+        32.48297369,
+        31.30941894,
+        31.62610506,
+        32.32666082,
+        32.81016886,
+    ]
+)
+
+
+def fake__band_int(d, x, r, x_r):
+    return 1
+
+
+class TestBandIntegrate(unittest.TestCase):
+    def test_cutout_nonzero_buffer(self):
+        x = np.arange(20, 80, 0.1)
+        y = fd.f_tophat(x, 50, 5)
+
+        x_test = np.arange(46.5, 53.5, 0.1)
+        y_test = fd.f_tophat(x_test, 50, 5)
+
+        y_eval, x_eval, idx = bi.cutout_nonzero(y, x, buffer=0.2)
+
+        np.testing.assert_array_almost_equal(x_test, x_eval)
+        np.testing.assert_array_almost_equal(y_test, y_eval)
+
+    def test_cutout_nonzero_nobuffer(self):
+        x = np.arange(20, 80, 0.1)
+        y = fd.f_tophat(x, 50, 5)
+
+        x_test = np.arange(47.5, 52.5, 0.1)
+        y_test = np.ones(x_test.shape) * 0.2
+
+        y_eval, x_eval, idx = bi.cutout_nonzero(y, x, buffer=0.0)
+
+        np.testing.assert_array_almost_equal(x_test, x_eval)
+        np.testing.assert_array_almost_equal(y_test, y_eval)
+
+    def test__band_int_highressrf(self):
+
+        x = np.arange(0, 100, 0.01)
+        d = (0.02 * x) ** 3 + (-0.2 * x) ** 2 + (-3 * x) + 100
+
+        x_r = np.arange(30, 70, 0.001)
+        r = fd.f_triangle(x_r, 50, 5)
+
+        x_band = bi._band_int(d, x, r, x_r)
+
+        self.assertAlmostEqual(x_band, 51.1717, places=3)
+
+    def test__band_int_highresspec(self):
+
+        x = np.arange(0, 100, 0.0001)
+        d = (0.02 * x) ** 3 + (-0.2 * x) ** 2 + (-3 * x) + 100
+
+        x_r = np.arange(30, 70, 0.001)
+        r = fd.f_triangle(x_r, 50, 5)
+
+        x_band = bi._band_int(d, x, r, x_r)
+
+        self.assertAlmostEqual(x_band, 51.1717, places=3)
+
+    @patch('matheo.band_integration.band_integration._band_int', wraps=fake__band_int)
+    def test_band_int_arr(self, mock):
+
+        d = np.zeros((3, 4, 5))
+        x = np.arange(5)
+        x_r = np.arange(10)
+        r = fd.f_triangle(x_r, 5, 5)
+
+        d_band = bi._band_int_arr(d, x, r, x_r, d_axis_x=2)
+
+        np.testing.assert_array_equal(np.ones((3, 4)), d_band)
+
+        self.assertEqual(12, mock.call_count)
+
+        expected_calls = []
+        for i in range(12):
+            expected_calls.append(call(np.zeros(5), x=x, r=r, x_r=x_r))
+
+        for expected_call, real_call in zip(expected_calls, mock.call_args_list):
+            np.testing.assert_array_equal(real_call[0][0], expected_call[1][0])
+
+            real_kwargs = real_call[1]
+            expected_kwargs = expected_call[2]
+            np.testing.assert_array_equal(real_kwargs["x"], expected_kwargs["x"])
+            np.testing.assert_array_equal(real_kwargs["r"], expected_kwargs["r"])
+            np.testing.assert_array_equal(real_kwargs["x_r"], expected_kwargs["x_r"])
+
+    @patch('matheo.band_integration.band_integration._band_int', wraps=fake__band_int)
+    def test_band_int2d_arr(self, mock):
+
+        d = np.zeros((3, 4, 5))
+        x = np.arange(5)
+        y = np.arange(3)
+        x_rx = np.arange(10)
+        rx = fd.f_triangle(x_rx, 5, 5)
+        y_ry = np.arange(5)
+        ry = fd.f_triangle(y_ry, 5, 3)
+
+        d_band = bi._band_int2d_arr(d, x, y, rx, x_rx, ry, y_ry, d_axis_x=2, d_axis_y=0)
+
+        np.testing.assert_array_equal(np.ones(4), d_band)
+
+        self.assertEqual(16, mock.call_count)
+
+        expected_calls = []
+        for i in range(12):
+            expected_calls.append(call(np.zeros(5), x=x, r=rx, x_r=x_rx))
+
+        for i in range(4):
+            expected_calls.append(call(np.ones(3), x=y, r=ry, x_r=y_ry))
+
+        for expected_call, real_call in zip(expected_calls, mock.call_args_list):
+            np.testing.assert_array_equal(real_call[0][0], expected_call[1][0])
+
+            real_kwargs = real_call[1]
+            expected_kwargs = expected_call[2]
+            np.testing.assert_array_equal(real_kwargs["x"], expected_kwargs["x"])
+            np.testing.assert_array_equal(real_kwargs["r"], expected_kwargs["r"])
+            np.testing.assert_array_equal(real_kwargs["x_r"], expected_kwargs["x_r"])
+
+    @patch('matheo.band_integration.band_integration._band_int', wraps=fake__band_int)
+    def test_band_int3d_arr(self, mock):
+
+        d = np.zeros((3, 4, 5))
+        x = np.arange(5)
+        y = np.arange(3)
+        z = np.arange(4)
+        x_rx = np.arange(10)
+        rx = fd.f_triangle(x_rx, 5, 5)
+        y_ry = np.arange(5)
+        ry = fd.f_triangle(y_ry, 5, 3)
+        z_rz = np.arange(7)
+        rz = fd.f_triangle(y_ry, 5, 3)
+
+        d_band = bi._band_int3d_arr(d, x, y, z, rx, x_rx, ry, y_ry, rz, z_rz, d_axis_x=2, d_axis_y=0, d_axis_z=1)
+
+        np.testing.assert_array_equal(np.array([1]), d_band)
+
+        self.assertEqual(17, mock.call_count)
+
+        expected_calls = []
+        for i in range(12):
+            expected_calls.append(call(np.zeros(5), x=x, r=rx, x_r=x_rx))
+
+        for i in range(4):
+            expected_calls.append(call(np.ones(3), x=y, r=ry, x_r=y_ry))
+
+        expected_calls.append(call(np.ones(4), x=z, r=rz, x_r=z_rz))
+
+        for expected_call, real_call in zip(expected_calls, mock.call_args_list):
+            np.testing.assert_array_equal(real_call[0][0], expected_call[1][0])
+
+            real_kwargs = real_call[1]
+            expected_kwargs = expected_call[2]
+            np.testing.assert_array_equal(real_kwargs["x"], expected_kwargs["x"])
+            np.testing.assert_array_equal(real_kwargs["r"], expected_kwargs["r"])
+            np.testing.assert_array_equal(real_kwargs["x_r"], expected_kwargs["x_r"])
+
+
+if __name__ == "__main__":
+    unittest.main()
+
+
+
+
+
+
+
+
+variable_dict = {
+    "measurement1": {
+        "dim": ["x1", "y2", "band1"],
+        "dtype": np.float32,
+        "attributes": {"units": "W m-2 sr-1 m-1"},
+     },
+    "measurement2": {
+        "dim": ["x1", "y2", "band2"],
+        "dtype": np.float32,
+        "attributes": {"units": "W m-2 sr-1 m-1"},
+     },
+    "band_blue": {
+        "dim": ["x", "y"],
+        "dtype": np.float32,
+        "attributes": {"units": "W m-2 sr-1 m-1"},
+     }
+ }
+
+
+
+
+
+
+
+
+
+
+
+
