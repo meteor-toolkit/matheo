@@ -1,144 +1,103 @@
 """
-Functions to band integrate spectra for given spectral response function.
+Functions to read spectral response function data with pyspectral
 """
 
-from punpy import MCPropagation
 import numpy as np
-from typing import Union
-from matheo.interpolation.interpolation import interpolate
-import pandas as pd
-import multiprocessing
+from pyspectral.rsr_reader import RelativeSpectralResponse
 
 
-__author__ = ["Sam Hunt", "Mattea Goalen"]
-__created__ = "24/7/2020"
+"""___Authorship___"""
+__author__ = "Sam Hunt"
+__created__ = "5/11/2020"
 
 
-def max_dim(arrays):
+def return_band_names(platform_name, sensor_name):
     """
-    Return max dimension of input numpy arrays
+    Returns band names for specified sensor from `pyspectral <https://pyspectral.readthedocs.io/en/master/installation.html#static-data>`_ library.
 
-    :type arrays: iter
-    :param arrays: n input numpy arrays
+    :type platform_name: str
+    :param platform_name: satellite name
 
-    :return: maximum dimension
-    :rtype: float
-    """
+    :type sensor_name: str
+    :param sensor_name: name of instrument on satellite
 
-    dims = []
-    for array in arrays:
-        dims.append(np.ndim(array))
-
-    return max(dims)
-
-
-def unc_to_dim(unc, dim, x=None, x_len=None):
-
-    original_dim = np.ndim(unc)
-
-    if (original_dim > 2) or (dim > 2):
-        raise ValueError(
-            "Can only raise uncertainty to a max dimension of 2 (e.g. covariance matrix)"
-        )
-
-    if original_dim == dim:
-        return unc
-    elif unc is None:
-        return None
-    else:
-        if original_dim == 0:
-            if (x is None) and (x_len is None):
-                raise AttributeError(
-                    "Please define either x or x_len to raise dimension of shape 0 uncertainty"
-                )
-            elif x is not None:
-                unc *= x
-            else:
-                unc = np.full(x_len, unc)
-
-        if dim == 1:
-            return unc
-
-        return np.diag(unc)
-
-
-def _func_with_unc(func, **kwargs):
-
-    # unpack kwargs
-    u_params = {k: v for k, v in kwargs.items() if k.startswith('u_')}
-    params = {k: v for k, v in kwargs.items() if k not in u_params.keys()}
-
-    # evaluate function
-    y = func(**params)
-
-    # if no uncertainties return only in band spectrum
-    if all(v == 0 for v in u_params.values()):
-        return y
-
-    # Add None's for any undefined uncertainties
-    u_params_missing = {k: None for k in kwargs.keys() if "u_"+k not in u_params}
-    u_params = {**u_params, **u_params_missing}
-
-    prop = MCPropagation(1000, parallel_cores=multiprocessing.cpu_count())
-
-    # Find max dimension of uncertainty data
-    unc_dim = max_dim(u_params.values())
-    if unc_dim != 2:
-        unc_dim = 1
-
-    u_params_dims = {k: v for k, v in kwargs.items() if k.startswith('u_')}
-    u_srf = unc_to_dim(u_srf, unc_dim, x=srf)
-    u_spectrum = unc_to_dim(u_spectrum, unc_dim, x=spectrum)
-    u_wl_spectrum = unc_to_dim(u_wl_spectrum, unc_dim)
-    u_wl_srf = unc_to_dim(u_wl_srf, unc_dim)
-
-    # Propagate uncertainties
-    if unc_dim == 1:
-        u_spectrum_band = prop.propagate_random(
-            func=func,
-            x=[spectrum, wl_spectrum, srf, wl_srf],
-            u_x=[u_spectrum, u_wl_spectrum, u_srf, u_wl_srf],
-        )
-    elif unc_dim == 2:
-        u_spectrum_band = prop.propagate_cov(
-            func=_band_integrate_measurement_function,
-            x=[spectrum, wl_spectrum, srf, wl_srf],
-            cov_x=[u_spectrum, u_wl_spectrum, u_srf, u_wl_srf],
-            return_corr=False,
-        )
-    else:
-        u_spectrum_band = None
-
-    del prop
-
-    return d_band, u_band
-
-def cutout_nonzero(y, x, buffer=0.2):
-    """
-    Returns continuous non-zero part of function y(x)
-
-    :type y: numpy.ndarray
-    :param y: function data values
-
-    :type x: numpy.ndarray
-    :param x: function coordinate data values
-
-    :type buffer: float
-    :param buffer: fraction of non-zero section of y to include as buffer on either side (default: 0.2)
+    :return: band names
+    :rtype: list
     """
 
-    # Find extent of non-zero region
-    idx = np.nonzero(y)
-    imin = min(idx[0])
-    imax = max(idx[0]) + 1
+    sensor = RelativeSpectralResponse(platform_name, sensor_name)
 
-    # Determine buffer
-    width = imax - imin
+    return list(sensor.rsr.keys())
 
-    imin -= int(width * buffer)
-    imax += int(width * buffer)
 
-    imin = imin if imin >= 0 else 0
-    imax = imax if imax <= len(y) else len(y)
+def return_band_centres(platform_name, sensor_name, detector_name=None):
+    """
+    Returns band centres for specified sensor from `pyspectral <https://pyspectral.readthedocs.io/en/master/installation.html#static-data>`_ library.
 
-    return y[imin:imax], x[imin:imax], [imin, imax]
+    :type platform_name: str
+    :param platform_name: satellite name
+
+    :type sensor_name: str
+    :param sensor_name: name of instrument on satellite
+
+    :type detector_name: str
+    :param detector_name: (optional) name of sensor detector. Can be used in sensor has SRF data for for different detectors separately - if not specified in this case different
+
+    :return: band centres in nm
+    :rtype: np.ndarray
+    """
+
+    if detector_name is None:
+        detector_name = "det-1"
+
+    sensor = RelativeSpectralResponse(platform_name, sensor_name)
+    band_names = return_band_names(platform_name, sensor_name)
+
+    band_centres = np.array(
+        [
+            sensor.rsr[band_name][detector_name]["central_wavelength"]
+            for band_name in band_names
+        ]
+    )
+
+    # convert to nm
+    band_centres = band_centres * sensor.si_scale / 1e-9
+
+    return band_centres
+
+
+def return_srf(platform_name, sensor_name, band_name, detector_name=None):
+    """
+    Returns spectral response function for specified sensor band from `pyspectral <https://pyspectral.readthedocs.io/en/master/installation.html#static-data>`_ library.
+
+    :type platform_name: str
+    :param platform_name: satellite name
+
+    :type sensor_name: str
+    :param sensor_name: name of instrument on satellite
+
+    :type band_name: str
+    :param band_name: name of sensor band
+
+    :type detector_name: str
+    :param detector_name: (optional) name of sensor detector. Can be used in sensor has SRF data for for different detectors separately - if not specified in this case different
+
+    :return: spectral response function
+    :rtype: np.ndarray
+
+    :return: wavelength coordinates for spectral data
+    :rtype: np.ndarray
+    """
+
+    if detector_name is None:
+        detector_name = "det-1"
+
+    sensor = RelativeSpectralResponse(platform_name, sensor_name)
+    srf = sensor.rsr[band_name][detector_name]["response"]  # gets rsr for given band
+    wl_srf = 1000 * sensor.rsr[band_name][detector_name]["wavelength"]
+
+    return srf, wl_srf
+
+
+if __name__ == "__main__":
+    pass
