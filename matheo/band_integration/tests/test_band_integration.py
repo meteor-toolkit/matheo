@@ -328,7 +328,7 @@ class TestBandIntegrate(unittest.TestCase):
             np.testing.assert_array_equal(real_kwargs["x_r"], expected_kwargs["x_r"])
 
     @patch('matheo.band_integration.band_integration._band_int', wraps=fake__band_int)
-    def test_band_int2d_arr(self, mock):
+    def test_band_int2ax_arr(self, mock):
 
         d = np.zeros((3, 4, 5))
         x = np.arange(5)
@@ -338,7 +338,7 @@ class TestBandIntegrate(unittest.TestCase):
         y_ry = np.arange(5)
         ry = fd.f_triangle(y_ry, 5, 3)
 
-        d_band = bi._band_int2d_arr(d, x, y, rx, x_rx, ry, y_ry, d_axis_x=2, d_axis_y=0)
+        d_band = bi._band_int2ax_arr(d, x, y, rx, x_rx, ry, y_ry, d_axis_x=2, d_axis_y=0)
 
         np.testing.assert_array_equal(np.ones(4), d_band)
 
@@ -361,7 +361,7 @@ class TestBandIntegrate(unittest.TestCase):
             np.testing.assert_array_equal(real_kwargs["x_r"], expected_kwargs["x_r"])
 
     @patch('matheo.band_integration.band_integration._band_int', wraps=fake__band_int)
-    def test_band_int3d_arr(self, mock):
+    def test_band_int3ax_arr(self, mock):
 
         d = np.zeros((3, 4, 5))
         x = np.arange(5)
@@ -374,7 +374,7 @@ class TestBandIntegrate(unittest.TestCase):
         z_rz = np.arange(7)
         rz = fd.f_triangle(y_ry, 5, 3)
 
-        d_band = bi._band_int3d_arr(d, x, y, z, rx, x_rx, ry, y_ry, rz, z_rz, d_axis_x=2, d_axis_y=0, d_axis_z=1)
+        d_band = bi._band_int3ax_arr(d, x, y, z, rx, x_rx, ry, y_ry, rz, z_rz, d_axis_x=2, d_axis_y=0, d_axis_z=1)
 
         np.testing.assert_array_equal(np.array([1]), d_band)
 

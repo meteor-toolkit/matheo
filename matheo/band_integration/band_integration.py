@@ -108,7 +108,7 @@ def _band_int_arr(d: np.ndarray, x: np.ndarray, r: np.ndarray, x_r: np.ndarray, 
     return np.apply_along_axis(_band_int, d_axis_x, arr=d, x=x, r=r, x_r=x_r)
 
 
-def _band_int2d_arr(
+def _band_int2ax_arr(
         d: np.ndarray,
         x: np.ndarray,
         y: np.ndarray,
@@ -142,7 +142,7 @@ def _band_int2d_arr(
     return d_intx_inty
 
 
-def _band_int3d_arr(
+def _band_int3ax_arr(
         d: np.ndarray,
         x: np.ndarray,
         y: np.ndarray,
@@ -216,7 +216,7 @@ def band_int(
     d_band, u_d_band = func_with_unc(
         _band_int_arr,
         params=dict(d=d, x=x, r=r, x_r=x_r, d_axis_x=d_axis_x),
-        u_params=dict(u_d=u_d, u_x=u_x, u_r=u_r, u_x_r=u_x_r)
+        u_params=dict(d=u_d, x=u_x, r=u_r, x_r=u_x_r)
     )
 
     if u_d_band is None:
@@ -225,7 +225,7 @@ def band_int(
     return d_band, u_d_band
 
 
-def band_int2d(
+def band_int2ax(
         d: np.ndarray,
         x: np.ndarray,
         y: np.ndarray,
@@ -268,7 +268,7 @@ def band_int2d(
     """
 
     d_band, u_d_band = func_with_unc(
-        _band_int_arr,
+        _band_int2ax_arr,
         params=dict(d=d, x=x, y=y, rx=rx, x_rx=x_rx, ry=ry, y_ry=y_ry, d_axis_x=d_axis_x, d_axis_y=d_axis_y),
         u_params=dict(d=u_d, x=u_x, y=u_y, rx=u_rx, x_rx=u_x_rx, ry=u_ry, y_ry=u_y_ry)
     )
@@ -279,7 +279,7 @@ def band_int2d(
     return d_band, u_d_band
 
 
-def band_int3d(
+def band_int3ax(
     d: np.ndarray,
     x: np.ndarray,
     y: np.ndarray,
@@ -364,7 +364,7 @@ def band_int3d(
         z_rz=u_z_rz
     )
 
-    d_band, u_d_band = func_with_unc(_band_int_arr, params=params, u_params=u_params)
+    d_band, u_d_band = func_with_unc(_band_int3ax_arr, params=params, u_params=u_params)
 
     if u_d_band is None:
         return d_band
@@ -415,15 +415,6 @@ def spectral_band_int_sensor(
             sensor_name=sensor_name,
             band_name=band_name,
         )
-        else:
-            bands[i], u_bands[i] = band_integrate(
-                spectrum,
-                wl_spectrum,
-                platform_name=platform_name,
-                sensor_name=sensor_name,
-                band_name=band_name,
-                u_spectrum=u_spectrum,
-            )
 
     band_data = pd.DataFrame(
         {
@@ -464,6 +455,7 @@ def pixel_int(
     :param u_width_pixel: uncertainty in width of band response per pixel
 
     :return: band integrated data
+    :return: uncertainty in band integrated data
     """
 
     d_pixel = np.zeros(len(x_pixel))
@@ -485,6 +477,159 @@ def pixel_int(
         d_pixel[i], u_d_pixel[i] = band_int(d, x, r, x_r, d_axis_x, u_d, u_x)
 
     return d_pixel, u_d_pixel
+
+
+def _band_int2d(
+        d: np.ndarray,
+        x: np.ndarray,
+        y: np.ndarray,
+        psf: np.ndarray,
+        x_psf: np.ndarray,
+        y_psf: np.ndarray
+) -> float:
+    """
+    Returns integral of a 2D data array over a response band defined by a 2D point spread function
+    (i.e., d(x, y) * psf(x_psf, y_psf))
+
+    N.B.: This function is intended to be wrapped, so it can be applied to an array and run within punpy
+
+    :param d: two dimensional data to be band integrated
+    :param x: data x coordinates
+    :param y: data y coordinates
+    :param psf: two dimensional point spread function of band response
+    :param x_psf: psf x coordinates
+    :param y_psf: psf y coordinates
+    :return: band integrated data
+    """
+
+    # todo - implement _band_int2d
+    raise NotImplementedError
+
+
+def _band_int2d_arr(
+        d: np.ndarray,
+        x: np.ndarray,
+        y: np.ndarray,
+        psf: np.ndarray,
+        x_psf: np.ndarray,
+        y_psf: np.ndarray,
+        d_axis_x: int = 0,
+        d_axis_y: int = 1
+) -> np.ndarray:
+    """
+    Integrates two dimensional slice of multi-dimensional data array over a response band defined by a 2D point spread
+    function
+
+    N.B.: This function is intended to be wrapped, so it can be run within punpy
+
+    :param d: two dimensional data to be band integrated
+    :param x: data x coordinates
+    :param y: data y coordinates
+    :param psf: two dimensional point spread function of band response
+    :param x_psf: psf x coordinates
+    :param y_psf: psf y coordinates
+    :param d_axis_x: (default 0) x axis in data array
+    :param d_axis_y: (default 1) y axis in data array
+    :return: band integrated data
+    """
+
+    # todo - implement _band_int2d_arr
+    raise NotImplementedError
+
+
+def band_int2d(
+    d: np.ndarray,
+    x: np.ndarray,
+    y: np.ndarray,
+    psf: np.ndarray,
+    x_psf: np.ndarray,
+    y_psf: np.ndarray,
+    d_axis_x: int = 0,
+    d_axis_y: int = 1,
+    u_d: Union[None, float, np.ndarray] = None,
+    u_x: Union[None, float, np.ndarray] = None,
+    u_y: Union[None, float, np.ndarray] = None,
+    u_psf: Union[None, float, np.ndarray] = None,
+    u_x_psf: Union[None, float, np.ndarray] = None,
+    u_y_psf: Union[None, float, np.ndarray] = None,
+) -> Union[float, np.ndarray, Tuple[Union[float, np.ndarray], Union[float, np.ndarray]]]:
+    """
+    Returns integral of a 2D data array over a response band defined by a 2D point spread function
+    (i.e., d(x, y) * psf(x_psf, y_psf))
+
+    :param d: two dimensional data to be band integrated
+    :param x: data x coordinates
+    :param y: data y coordinates
+    :param psf: two dimensional point spread function of band response
+    :param x_psf: psf x coordinates
+    :param y_psf: psf y coordinates
+    :param d_axis_x: (default 0) x axis in data array, if d more than 2D
+    :param d_axis_y: (default 1) y axis in data array, if d more than 2D
+    :param u_d: (optional) uncertainty in data
+    :param u_x: (optional) uncertainty in data x coordinates
+    :param u_y: (optional) uncertainty in data y coordinates
+    :param u_psf: (optional) uncertainty in point spread function of band response
+    :param u_x_psf: (optional) uncertainty in psf x coordinates
+    :param u_y_psf: (optional) uncertainty in psf x coordinates
+
+    :return: band integrated data
+    :return: uncertainty of band integrated data (skipped if no input uncertainties provided)
+    """
+
+    d_band, u_d_band = func_with_unc(
+        _band_int2d_arr,
+        params=dict(d=d, x=x, y=y, psf=psf, x_psf=x_psf, y_psf=y_psf, d_axis_x=d_axis_x, d_axis_y=d_axis_y),
+        u_params=dict(d=u_d, x=u_x, y=u_y, psf=u_psf, x_psf=u_x_psf, y_psf=u_y_psf)
+    )
+
+    if u_d_band is None:
+        return d_band
+
+    return d_band, u_d_band
+
+
+def pixel_int2d(
+    d: np.ndarray,
+    x: np.ndarray,
+    y: np.ndarray,
+    x_pixel: np.ndarray,
+    y_pixel: np.ndarray,
+    width_pixel: np.ndarray,
+    psf_shape: str = "triangle",
+    d_axis_x: int = 0,
+    d_axis_y: int = 0,
+    u_d: Union[None, float, np.ndarray] = None,
+    u_x: Union[None, float, np.ndarray] = None,
+    u_y: Union[None, float, np.ndarray] = None,
+    u_x_pixel: Union[None, float, np.ndarray] = None,
+    u_y_pixel: Union[None, float, np.ndarray] = None,
+    u_width_pixel: Union[None, float, np.ndarray] = None,
+) -> Tuple[np.ndarray, np.ndarray]:
+    """
+    Returns integral of data array over a response band (i.e., d(x) * r(x_r))
+
+    :param d: data to be band integrated
+    :param x: data x coordinates
+    :param y: data y coordinates
+    :param x_pixel: x positions of centre of psf per pixel
+    :param y_pixel: y positions of centre of psf per pixel
+    :param width_pixel: width of psf per pixel
+    :param psf_shape: (default X) psf shape - must be one of...
+    :param d_axis_x: (default 0) x axis in data array, if d more than 2D
+    :param d_axis_y: (default 1) y axis in data array, if d more than 2D
+    :param u_d: uncertainty in data
+    :param u_x: uncertainty in data x coordinates
+    :param u_y: uncertainty in data y coordinates
+    :param u_x_pixel: uncertainty in x positions of centre of psf per pixel
+    :param u_y_pixel: uncertainty in y positions of centre of psf per pixel
+    :param u_width_pixel: uncertainty in width of psf per pixel
+
+    :return: band integrated data
+    :return: uncertainty in band integrated data
+    """
+
+    # todo - implement _band_int2d_arr
+    raise NotImplementedError
 
 
 if __name__ == "__main__":
