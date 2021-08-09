@@ -251,6 +251,45 @@ def fake__band_int(d, x, r, x_r):
     return 1
 
 
+def fake_band_int(d, x, r, x_r, d_axis_x):
+    sli = [slice(None)] * d.ndim
+    sli[d_axis_x] = 0
+    sli = tuple(sli)
+
+    return np.ones(d[sli].shape)
+
+
+class FakeBandGen:
+    def __init__(self, max_iter=3):
+        self.max_iter = max_iter
+        self.len_out = 5
+
+    def __iter__(self):
+
+        # Define counter
+        self.i = 0
+        return self
+
+    def __next__(self):
+        """
+        Returns ith function
+
+        :return: fake band srf
+        :return: band srf wavelength coordinates
+        """
+
+        # Iterate through bands
+        if self.i < self.max_iter:
+            # Update counter
+            self.i += 1
+
+            return np.full(self.len_out, self.i), np.arange(self.len_out)
+
+        else:
+            raise StopIteration
+
+
+
 class TestBandIntegrate(unittest.TestCase):
     def test_cutout_nonzero_buffer(self):
         x = np.arange(20, 80, 0.1)
@@ -397,6 +436,93 @@ class TestBandIntegrate(unittest.TestCase):
             np.testing.assert_array_equal(real_kwargs["x"], expected_kwargs["x"])
             np.testing.assert_array_equal(real_kwargs["r"], expected_kwargs["r"])
             np.testing.assert_array_equal(real_kwargs["x_r"], expected_kwargs["x_r"])
+
+    @patch('matheo.band_integration.band_integration.band_int', wraps=fake_band_int)
+    def test_iter_band_int(self, mock):
+        d = np.zeros((3, 4, 11))
+        x = np.arange(11)
+        fakebandgen = FakeBandGen(2)
+        fakebanditer = iter(fakebandgen)
+
+        d_band = bi.iter_band_int(d, x, fakebanditer, d_axis_x=2)
+
+        self.assertEqual(d_band.shape, (3,4,2))
+        np.testing.assert_array_equal(d_band, np.ones(d_band.shape))
+
+        expected_calls = [
+            call(d, x, np.full(5, 1), np.arange(5), 2),
+            call(d, x, np.full(5, 2), np.arange(5), 2)
+        ]
+
+        for expected_call, real_call in zip(expected_calls, mock.call_args_list):
+            np.testing.assert_array_equal(real_call[0][0], expected_call[1][0])
+            np.testing.assert_array_equal(real_call[0][1], expected_call[1][1])
+            np.testing.assert_array_equal(real_call[0][2], expected_call[1][2])
+            np.testing.assert_array_equal(real_call[0][3], expected_call[1][3])
+            self.assertEqual(real_call[0][4], expected_call[1][4])
+
+
+    @patch('matheo.band_integration.band_integration.band_int', wraps=fake_band_int)
+    def test_spectral_band_int_sensor(self, mock):
+        d = np.zeros((3, 4, 11))
+        wl = np.arange(400, 510, 10)
+
+        d_band, wl_band = bi.spectral_band_int_sensor(
+            d,
+            wl,
+            d_axis_wl=2,
+            platform_name="Sentinel-2A",
+            sensor_name="MSI",
+        )
+
+        self.assertEqual(d_band.shape, (3, 4, 2))
+        np.testing.assert_array_equal(d_band, np.ones(d_band.shape))
+
+        expected_calls = [
+            call(d, x, np.full(5, 1), np.arange(5), 2),
+            call(d, x, np.full(5, 2), np.arange(5), 2)
+        ]
+
+        for expected_call, real_call in zip(expected_calls, mock.call_args_list):
+            np.testing.assert_array_equal(real_call[0][0], expected_call[1][0])
+            np.testing.assert_array_equal(real_call[0][1], expected_call[1][1])
+            np.testing.assert_array_equal(real_call[0][2], expected_call[1][2])
+            np.testing.assert_array_equal(real_call[0][3], expected_call[1][3])
+            self.assertEqual(real_call[0][4], expected_call[1][4])
+
+        pass
+
+    @patch('matheo.band_integration.band_integration.band_int', wraps=fake_band_int)
+    def test_pixel_int(self, mock):
+        d = np.zeros((3, 4, 11))
+        x = np.arange(11)
+        x_pixel = np.array([5, 10])
+        width_pixel = np.array([2, 4])
+
+        d_band = bi.pixel_int(
+            d,
+            x,
+            x_pixel,
+            width_pixel,
+            d_axis_x=2,
+        )
+
+        self.assertEqual(d_band.shape, (3, 4, 2))
+        np.testing.assert_array_equal(d_band, np.ones(d_band.shape))
+
+        expected_calls = [
+            call(d, x, np.full(5, 1), np.arange(5), 2),
+            call(d, x, np.full(5, 2), np.arange(5), 2)
+        ]
+
+        for expected_call, real_call in zip(expected_calls, mock.call_args_list):
+            np.testing.assert_array_equal(real_call[0][0], expected_call[1][0])
+            np.testing.assert_array_equal(real_call[0][1], expected_call[1][1])
+            np.testing.assert_array_equal(real_call[0][2], expected_call[1][2])
+            np.testing.assert_array_equal(real_call[0][3], expected_call[1][3])
+            self.assertEqual(real_call[0][4], expected_call[1][4])
+
+        pass
 
 
 if __name__ == "__main__":

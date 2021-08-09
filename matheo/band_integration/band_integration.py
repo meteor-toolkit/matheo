@@ -2,16 +2,11 @@
 Functions to band integrate spectra for given spectral response function.
 """
 
-from matheo.band_integration.utils import (
-    return_srf,
-    return_band_centres,
-    return_band_names,
-)
-
+from matheo.band_integration.srf_utils import return_iter_srf, return_band_centres, return_band_names
 from matheo.utils.punpy_util import func_with_unc
 from matheo.utils.function_def import iter_f, f_tophat, f_triangle, f_gaussian
 import numpy as np
-from typing import Union, Tuple
+from typing import Union, Tuple, List, Iterable
 from matheo.interpolation.interpolation import interpolate
 
 
@@ -372,60 +367,105 @@ def band_int3ax(
     return d_band, u_d_band
 
 
+def iter_band_int(
+    d: np.ndarray,
+    x: np.ndarray,
+    iter_r: Iterable,
+    d_axis_x: int = 0,
+    u_d: Union[None, float, np.ndarray] = None,
+    u_x: Union[None, float, np.ndarray] = None,
+    u_r: Union[None, float, np.ndarray] = None,
+    u_x_r: Union[None, float, np.ndarray] = None,
+) -> Union[float, np.ndarray, Tuple[Union[float, np.ndarray], Union[float, np.ndarray]]]:
+    """
+    Returns integral of data array over a set of response bands defined by iterator
+
+    :param d: data to be band integrated
+    :param x: data coordinates
+    :param iter_r: iterable that returns band response function and band response function coordinates at each iteration
+    :param d_axis_x: (default 0) if d greater than 1D, specify axis to band integrate along
+    :param u_d: (optional) uncertainty in data
+    :param u_x: (optional) uncertainty in data coordinates
+    :param u_r: (optional) uncertainty in band response function
+    :param u_x_r: (optional) uncertainty in band response function coordinates
+
+    :return: band integrated data
+    :return: uncertainty of band integrated data (skipped if no input uncertainties provided)
+    """
+
+    # Initialise output data matrix
+    d_band_shape = list(d.shape)
+    d_band_shape[d_axis_x] = sum(1 for x in iter_r)
+
+    d_band = np.zeros(d_band_shape)
+    u_d_band = np.zeros(d_band_shape)
+
+    # Evaluate band integrate
+    for i, (r_i, x_r_i) in enumerate(iter_r):
+
+        # define slice ith band integrated data needs to populate in d_band
+        sli = [slice(None)] * d_band.ndim
+        sli[d_axis_x] = i
+        sli = tuple(sli)
+
+        # evaluate band integral
+        if (u_d is None) and (u_x is None) and (u_r is None) and (u_x_r is None):
+            d_band[sli] = band_int(d, x, r_i, x_r_i, d_axis_x)
+        else:
+            d_band[sli], u_d_band[sli] = band_int(d, x, r_i, x_r_i, d_axis_x, u_d, u_x, u_r, u_x_r)
+
+    if not u_d_band.any():
+        return d_band
+    else:
+        return d_band, u_d_band
+
+
 def spectral_band_int_sensor(
     d: np.ndarray,
-    w: np.ndarray,
+    wl: np.ndarray,
     platform_name: str,
     sensor_name: str,
-    d_axis_w: int = 0,
+    detector_name: str = None,
+    band_names: Union[None, List[str]] = None,
+    d_axis_wl: int = 0,
     u_d: np.ndarray = None,
-    u_w: np.ndarray = None,
-):
+    u_wl: np.ndarray = None,
+) -> Union[Tuple[np.ndarray, np.ndarray], Tuple[np.ndarray, np.ndarray, np.ndarray]]:
     """
     Returns spectral band integrated data array for named sensor spectral bands
 
     :param d: data to be band integrated
-    :param w: data wavelength coordinates
+    :param wl: data wavelength coordinates
     :param platform_name: satellite name
     :param sensor_name: name of instrument on satellite
-    :param d_axis_w: spectral axis in data array
-    :param u_d: uncertainty in data
-    :param u_w: uncertainty in data coordinates along first band integration axis
+    :param detector_name: (optional) name of sensor detector. Can be used in sensor has SRF data for for different
+    detectors separately - if not specified in this case different
+    :param band_names: (optional) sensor bands to evaluate band integral for, if omitted band integral evaluated for
+    all bands within spectral range of data
+    :param d_axis_wl: (default 0) spectral axis in data array
+    :param u_d: (optional) uncertainty in data
+    :param u_wl: (optional) uncertainty in data coordinates along first band integration axis
 
     :return: band integrated data
+    :return: band integrated data centre wavelengths
+    :return: uncertainties in band integrated data (skipped if no input uncertainties provided)
     """
 
-    sensor_band_centres = return_band_centres(platform_name, sensor_name)
-    sensor_band_names = return_band_names(platform_name, sensor_name)
+    # Find bands within data spectral range
+    band_names = return_band_names(platform_name, sensor_name, band_names)
+    band_centres = return_band_centres(platform_name, sensor_name, band_names)
+    valid_idx = np.where(np.logical_and(band_centres < max(wl), band_centres > min(wl)))[0]
+    band_centres = band_centres[valid_idx]
+    band_names = [band_names[i] for i in valid_idx]
 
-    valid_idx = np.where(
-        np.logical_and(sensor_band_centres < max(w), sensor_band_centres > min(w))
-    )[0]
+    # Evaluate band integral
+    iter_srf = return_iter_srf(platform_name, sensor_name, band_names, detector_name=detector_name)
 
-    sensor_band_centres = sensor_band_centres[valid_idx]
-    sensor_band_names = [sensor_band_names[i] for i in valid_idx]
+    if (u_d is None) and (u_wl is None):
+        return iter_band_int(d, wl, iter_srf, d_axis_wl), band_centres
 
-    bands = np.zeros(len(sensor_band_names))
-    u_bands = np.zeros(len(sensor_band_names))
-    for i, band_name in enumerate(sensor_band_names):
-        bands[i] = band_integrate(
-            spectrum,
-            wl_spectrum,
-            platform_name=platform_name,
-            sensor_name=sensor_name,
-            band_name=band_name,
-        )
-
-    band_data = pd.DataFrame(
-        {
-            "band_name": sensor_band_names,
-            "band_centre": sensor_band_centres,
-            "spectrum_in_band": bands,
-            "u_spectrum_in_band": u_bands,
-        }
-    )
-
-    return band_data
+    d_band, u_d_band = iter_band_int(d, wl, iter_srf, d_axis_wl)
+    return d_band, band_centres, u_d_band
 
 
 def pixel_int(
@@ -458,9 +498,7 @@ def pixel_int(
     :return: uncertainty in band integrated data
     """
 
-    d_pixel = np.zeros(len(x_pixel))
-    u_d_pixel = np.zeros(len(x_pixel))
-
+    # Get function
     if band_shape == "triangle":
         f = f_triangle
         xlim_width = 1
@@ -473,10 +511,7 @@ def pixel_int(
     else:
         raise ValueError("band_shape must be one of ['triangle', 'tophat', 'gaussian']")
 
-    for i, (r, x_r) in enumerate(iter_f(f, x_pixel, width_pixel, xlim_width=xlim_width)):
-        d_pixel[i], u_d_pixel[i] = band_int(d, x, r, x_r, d_axis_x, u_d, u_x)
-
-    return d_pixel, u_d_pixel
+    return iter_band_int(d, x, iter_f(f, x_pixel, width_pixel, xlim_width=xlim_width), d_axis_x, u_d, u_x)
 
 
 def _band_int2d(
