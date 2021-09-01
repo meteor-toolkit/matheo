@@ -45,6 +45,19 @@ def cutout_nonzero(y, x, buffer=0.2):
     return y[imin:imax], x[imin:imax], [imin, imax]
 
 
+def get_x_offset(y, x, x_centre):
+    """
+    Returns coordinate offset required to centre function on given position.
+
+    :param y: function values
+    :param x: function coordinates
+    :param x_centre: function centre defined my location of maximum value.
+    :return: coordinate offset to centre function on x_centre
+    """
+
+    return x_centre - x[np.argmax(y)]
+
+
 def _band_int(d: np.ndarray, x: np.ndarray, r: np.ndarray, x_r: np.ndarray) -> float:
     """
     Returns integral of data array over a response band (i.e., d(x) * r(x_r))
@@ -186,6 +199,7 @@ def band_int(
     r: np.ndarray,
     x_r: np.ndarray,
     d_axis_x: int = 0,
+    x_r_centre: Union[None, float] = None,
     u_d: Union[None, float, np.ndarray] = None,
     u_x: Union[None, float, np.ndarray] = None,
     u_r: Union[None, float, np.ndarray] = None,
@@ -199,6 +213,9 @@ def band_int(
     :param r: band response function
     :param x_r: band response function coordinates
     :param d_axis_x: (default 0) if d greater than 1D, specify axis to band integrate along
+    :param x_r_centre: (optional) centre of band response function in data coordinates, if there is an offset.
+     Defined by location of band response function peak in data coordinates.
+     Useful to define where sensor is looking along an extended input, e.g. spatially.
     :param u_d: (optional) uncertainty in data
     :param u_x: (optional) uncertainty in data coordinates
     :param u_r: (optional) uncertainty in band response function
@@ -208,9 +225,11 @@ def band_int(
     :return: uncertainty of band integrated data (skipped if no input uncertainties provided)
     """
 
+    x_r_off = get_x_offset(r, x_r, x_r_centre) if x_r_centre is not None else 0
+
     d_band, u_d_band = func_with_unc(
         _band_int_arr,
-        params=dict(d=d, x=x, r=r, x_r=x_r, d_axis_x=d_axis_x),
+        params=dict(d=d, x=x, r=r, x_r=x_r+x_r_off, d_axis_x=d_axis_x),
         u_params=dict(d=u_d, x=u_x, r=u_r, x_r=u_x_r)
     )
 
@@ -230,6 +249,8 @@ def band_int2ax(
         y_ry: np.ndarray,
         d_axis_x: int = 0,
         d_axis_y: int = 0,
+        x_rx_centre: Union[None, float] = None,
+        y_ry_centre: Union[None, float] = None,
         u_d: Union[None, float, np.ndarray] = None,
         u_x: Union[None, float, np.ndarray] = None,
         u_y: Union[None, float, np.ndarray] = None,
@@ -250,6 +271,10 @@ def band_int2ax(
     :param y_ry: second band response function coordinates
     :param d_axis_x: (default 0) x axis in data array
     :param d_axis_y: (default 1) y axis in data array
+    :param x_rx_centre: (optional) centre of rx function in data coordinates, if there is an offset.
+     Defined by location of band response function peak in data coordinates.
+     Useful to define where sensor is looking along an extended input, e.g. spatially.
+    :param y_ry_centre: (optional) centre of ry function in data coordinates, if there is an offset (as for x_rx_centre)
     :param u_d: (optional) uncertainty in data
     :param u_x: (optional) uncertainty in data coordinates along first band integration axis
     :param u_y: (optional) uncertainty in data coordinates along second band integration axis
@@ -262,9 +287,22 @@ def band_int2ax(
     :return: uncertainty of band integrated data (skipped if no input uncertainties provided)
     """
 
+    x_rx_off = get_x_offset(rx, x_rx, x_rx_centre) if x_rx_centre is not None else 0
+    y_ry_off = get_x_offset(ry, y_ry, y_ry_centre) if y_ry_centre is not None else 0
+
     d_band, u_d_band = func_with_unc(
         _band_int2ax_arr,
-        params=dict(d=d, x=x, y=y, rx=rx, x_rx=x_rx, ry=ry, y_ry=y_ry, d_axis_x=d_axis_x, d_axis_y=d_axis_y),
+        params=dict(
+            d=d,
+            x=x,
+            y=y,
+            rx=rx,
+            x_rx=x_rx+x_rx_off,
+            ry=ry,
+            y_ry=y_ry+y_ry_off,
+            d_axis_x=d_axis_x,
+            d_axis_y=d_axis_y
+        ),
         u_params=dict(d=u_d, x=u_x, y=u_y, rx=u_rx, x_rx=u_x_rx, ry=u_ry, y_ry=u_y_ry)
     )
 
@@ -288,6 +326,9 @@ def band_int3ax(
     d_axis_x: int = 0,
     d_axis_y: int = 1,
     d_axis_z: int = 2,
+    x_rx_centre: Union[None, float] = None,
+    y_ry_centre: Union[None, float] = None,
+    z_rz_centre: Union[None, float] = None,
     u_d: Union[None, float, np.ndarray] = None,
     u_x: Union[None, float, np.ndarray] = None,
     u_y: Union[None, float, np.ndarray] = None,
@@ -315,6 +356,11 @@ def band_int3ax(
     :param d_axis_x: (default 0) x axis in data array
     :param d_axis_y: (default 1) y axis in data array
     :param d_axis_z: (default 2) z axis in data array
+    :param x_rx_centre: (optional) centre of rx function in data coordinates, if there is an offset.
+     Defined by location of band response function peak in data coordinates.
+     Useful to define where sensor is looking along an extended input, e.g. spatially.
+    :param y_ry_centre: (optional) centre of ry function in data coordinates, if there is an offset (as for x_rx_centre)
+    :param z_rz_centre: (optional) centre of rz function in data coordinates, if there is an offset (as for x_rx_centre)
     :param u_d: (optional) uncertainty in data
     :param u_x: (optional) uncertainty in data coordinates along first band integration axis
     :param u_y: (optional) uncertainty in data coordinates along second band integration axis
@@ -330,17 +376,21 @@ def band_int3ax(
     :return: uncertainty of band integrated data (skipped if no input uncertainties provided)
     """
 
+    x_rx_off = get_x_offset(rx, x_rx, x_rx_centre) if x_rx_centre is not None else 0
+    y_ry_off = get_x_offset(ry, y_ry, y_ry_centre) if y_ry_centre is not None else 0
+    z_rz_off = get_x_offset(rz, z_rz, z_rz_centre) if z_rz_centre is not None else 0
+
     params = dict(
         d=d,
         x=x,
         y=y,
         z=z,
         rx=rx,
-        x_rx=x_rx,
+        x_rx=x_rx+x_rx_off,
         ry=ry,
-        y_ry=y_ry,
+        y_ry=y_ry+y_ry_off,
         rz=rz,
-        z_ry=z_rz,
+        z_ry=z_rz+z_rz_off,
         d_axis_x=d_axis_x,
         d_axis_y=d_axis_y,
         d_axis_z=d_axis_z
@@ -475,11 +525,12 @@ def pixel_int(
         width_pixel: np.ndarray,
         band_shape: str = "triangle",
         d_axis_x: int = 0,
+        x_pixel_centre: Union[None, float] = None,
         u_d: Union[None, float, np.ndarray] = None,
         u_x: Union[None, float, np.ndarray] = None,
         u_x_pixel: Union[None, float, np.ndarray] = None,
         u_width_pixel: Union[None, float, np.ndarray] = None,
-) -> Tuple[np.ndarray, np.ndarray]:
+) -> Union[np.ndarray, Tuple[np.ndarray, np.ndarray]]:
     """
     Returns integral of data array over a response band (i.e., d(x) * r(x_r))
 
@@ -489,10 +540,13 @@ def pixel_int(
     :param width_pixel: width of band response per pixel
     :param band_shape: (default triangular) band shape - must be one of 'triangle', 'tophat', or 'gaussian'
     :param d_axis_x: (default 0) if d greater than 1D, specify axis pixels are along
-    :param u_d: uncertainty in data
-    :param u_x: uncertainty in data coordinates
-    :param u_x_pixel: uncertainty in centre of band response per pixel
-    :param u_width_pixel: uncertainty in width of band response per pixel
+    :param x_pixel_centre: (optional) centre of pixels in data coordinates, if there is an offset.
+     Defined as half way between max and min pixel values.
+     Useful to define where sensor is looking along an extended input, e.g. spatially.
+    :param u_d: (optional) uncertainty in data
+    :param u_x: (optional) uncertainty in data coordinates
+    :param u_x_pixel: (optional) uncertainty in centre of band response per pixel
+    :param u_width_pixel: (optional) uncertainty in width of band response per pixel
 
     :return: band integrated data
     :return: uncertainty in band integrated data
@@ -511,7 +565,10 @@ def pixel_int(
     else:
         raise ValueError("band_shape must be one of ['triangle', 'tophat', 'gaussian']")
 
-    return iter_band_int(d, x, iter_f(f, x_pixel, width_pixel, xlim_width=xlim_width), d_axis_x, u_d, u_x)
+    # If x_pixel_centre defined compute offset for x_pixel array
+    x_pixel_off = x_pixel_centre - ((x_pixel.max() - x_pixel.min()) / 2.0) if x_pixel_centre is not None else 0
+
+    return iter_band_int(d, x, iter_f(f, x_pixel+x_pixel_off, width_pixel, xlim_width=xlim_width), d_axis_x, u_d, u_x)
 
 
 def _band_int2d(

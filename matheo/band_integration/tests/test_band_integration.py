@@ -315,6 +315,15 @@ class TestBandIntegrate(unittest.TestCase):
         np.testing.assert_array_almost_equal(x_test, x_eval)
         np.testing.assert_array_almost_equal(y_test, y_eval)
 
+    def test_get_x_offset(self):
+        x = np.arange(0, 40, 1)
+        y = fd.f_tophat(x, 20, 5)
+        y[23] = 1.1
+
+        x_off = bi.get_x_offset(y, x, 50)
+
+        self.assertEqual(x_off, 27)
+
     def test__band_int_highressrf(self):
 
         x = np.arange(0, 100, 0.01)
