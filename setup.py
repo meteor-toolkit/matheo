@@ -25,6 +25,6 @@ setup(
     description="Matheo is a python package with mathematical algorithms for use in earth observation data and tools.",
     long_description=read("README.rst"),
     packages=find_packages(exclude=("tests",)),
-    install_requires=["numpy", "numdifftools", "scipy"],
+    install_requires=["numpy", "numdifftools", "scipy", "xarray", "pyspectral"],
     extras_require={"dev": ["pre-commit", "tox", "sphinx", "sphinx_rtd_theme"]},
 )
