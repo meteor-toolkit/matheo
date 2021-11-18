@@ -21,11 +21,10 @@ __status__ = "Development"
 
 
 class Toeplitz:
-    def __init__(self, x, K):
-        self.x = x
-        self.K = K
+    def __init__(self):
+        pass
 
-    def toepfftmult(self):
+    def toepfftmult(self, x, K):
         """
         Function to evaluate Toeplitz matrix-vector or Toeplitz matrix-matrix product using FFT
 
@@ -37,23 +36,23 @@ class Toeplitz:
         """
 
         # Get size of x vector or matrix and create a padded y matrix of double the length
-        lx = len(np.shape(self.x))
+        lx = x.ndim
         if lx == 2:
-            n, m = np.shape(self.x)
-            y = np.concatenate((self.x, np.zeros(self.x.shape)), axis=1)
+            n, m = x.shape
+            y = np.concatenate((x, np.zeros(x.shape)), axis=1)
         elif lx == 1:
-            m = np.shape(self.x)[0]
+            m = x.shape[0]
             n = 1
-            y = np.concatenate((self.x, np.zeros(self.x.shape)))
+            y = np.concatenate((x, np.zeros(x.shape)))
         else:
             sys.exit('Funky dimension of x!')
 
         # Build circulant vector from Toeplitz vector and take fft
-        ct = np.concatenate((self.K, np.zeros(1), self.K[:0:-1])).T
-        fc = np.matlib.repmat(fft(ct), n, 1)[0]
+        ct = np.concatenate((K, np.zeros(1), K[:0:-1])).T
+        fc = np.matlib.repmat(fft.fft(ct), n, 1)[0]
 
         # FFT multiplication
-        cy = ifft(np.multiply(fc, fft(y)))
+        cy = ifft(np.multiply(fc, fft.fft(y)))
         cy = cy.real
         if n == 1:
             return cy[0:m]
