@@ -519,9 +519,25 @@ class TestBandIntegrate(unittest.TestCase):
         self.assertEqual(d_band.shape, (3, 4, 2))
         np.testing.assert_array_equal(d_band, np.ones(d_band.shape))
 
+        x_r_0 = np.arange(5-2,5+2+1,0.01) # (centre-width, centre+width+1, 0.01)
+        r_0 = np.zeros(x_r_0.shape)
+        first_half = np.logical_and(5-2 < x_r_0, x_r_0 <= 5)
+        r_0[first_half] = (x_r_0[first_half] - (5-2)) / (x_pixel[0] - (5-2)) # = f_triangle(x_r_0, centre, width)
+
+        second_half = np.logical_and(x_pixel[0] < x_r_0, x_r_0 < (5+2))
+        r_0[second_half] = ((5+2) - x_r_0[second_half]) / ((5+2) - 5)
+
+        x_r_1 = np.arange(10-4, 10+4+1, 0.01) # (centre-width, centre+width+1, 0.01)
+        r_1 = np.zeros(x_r_1.shape)
+        first_half = np.logical_and((10-4) < x_r_1, x_r_1 <= 10)
+        r_1[first_half] = (x_r_1[first_half] - (10-4)) / (10 - (10-4))
+
+        second_half = np.logical_and(x_pixel[1] < x_r_1, x_r_1 < (10+4))
+        r_1[second_half] = ((10+4) - x_r_1[second_half]) / ((10+4) - 10) # = f_triangle(x_r_1, centre, width)
+
         expected_calls = [
-            call(d, x, np.full(5, 1), np.arange(5), 2),
-            call(d, x, np.full(5, 2), np.arange(5), 2)
+            call(d, x, r_0, x_r_0, 2),
+            call(d, x, r_1, x_r_1, 2)
         ]
 
         for expected_call, real_call in zip(expected_calls, mock.call_args_list):
