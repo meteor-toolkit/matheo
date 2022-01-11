@@ -295,7 +295,7 @@ class TestBandIntegrate(unittest.TestCase):
         x = np.arange(20, 80, 0.1)
         y = fd.f_tophat(x, 50, 5)
 
-        x_test = np.arange(43,57,0.1)#46.5, 53.5, 0.1)
+        x_test = np.arange(43,57,0.1)
         y_test = fd.f_tophat(x_test, 50, 5)
 
         y_eval, x_eval, idx = bi.cutout_nonzero(y, x, buffer=0.2)
@@ -307,8 +307,8 @@ class TestBandIntegrate(unittest.TestCase):
         x = np.arange(20, 80, 0.1)
         y = fd.f_tophat(x, 50, 5)
 
-        x_test = np.arange(45,55,0.1)#47.5, 52.5, 0.1)
-        y_test = np.ones(x_test.shape)# * 0.2
+        x_test = np.arange(45,55,0.1)
+        y_test = np.ones(x_test.shape)
 
         y_eval, x_eval, idx = bi.cutout_nonzero(y, x, buffer=0.0)
 
@@ -520,20 +520,22 @@ class TestBandIntegrate(unittest.TestCase):
         np.testing.assert_array_equal(d_band, np.ones(d_band.shape))
 
         x_r_0 = np.arange(5-2,5+2+1,0.01) # (centre-width, centre+width+1, 0.01)
+        # r_0 = f_triangle(x_r_0, centre, width):
         r_0 = np.zeros(x_r_0.shape)
         first_half = np.logical_and(5-2 < x_r_0, x_r_0 <= 5)
-        r_0[first_half] = (x_r_0[first_half] - (5-2)) / (x_pixel[0] - (5-2)) # = f_triangle(x_r_0, centre, width)
+        r_0[first_half] = (x_r_0[first_half] - (5-2)) / (x_pixel[0] - (5-2))
 
         second_half = np.logical_and(x_pixel[0] < x_r_0, x_r_0 < (5+2))
         r_0[second_half] = ((5+2) - x_r_0[second_half]) / ((5+2) - 5)
 
         x_r_1 = np.arange(10-4, 10+4+1, 0.01) # (centre-width, centre+width+1, 0.01)
+        # r_1 = f_triangle(x_r_1, centre, width):
         r_1 = np.zeros(x_r_1.shape)
         first_half = np.logical_and((10-4) < x_r_1, x_r_1 <= 10)
         r_1[first_half] = (x_r_1[first_half] - (10-4)) / (10 - (10-4))
 
         second_half = np.logical_and(x_pixel[1] < x_r_1, x_r_1 < (10+4))
-        r_1[second_half] = ((10+4) - x_r_1[second_half]) / ((10+4) - 10) # = f_triangle(x_r_1, centre, width)
+        r_1[second_half] = ((10+4) - x_r_1[second_half]) / ((10+4) - 10)
 
         expected_calls = [
             call(d, x, r_0, x_r_0, 2),
