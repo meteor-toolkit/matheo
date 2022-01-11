@@ -295,7 +295,7 @@ class TestBandIntegrate(unittest.TestCase):
         x = np.arange(20, 80, 0.1)
         y = fd.f_tophat(x, 50, 5)
 
-        x_test = np.arange(46.5, 53.5, 0.1)
+        x_test = np.arange(43,57,0.1)#46.5, 53.5, 0.1)
         y_test = fd.f_tophat(x_test, 50, 5)
 
         y_eval, x_eval, idx = bi.cutout_nonzero(y, x, buffer=0.2)
@@ -307,8 +307,8 @@ class TestBandIntegrate(unittest.TestCase):
         x = np.arange(20, 80, 0.1)
         y = fd.f_tophat(x, 50, 5)
 
-        x_test = np.arange(47.5, 52.5, 0.1)
-        y_test = np.ones(x_test.shape) * 0.2
+        x_test = np.arange(45,55,0.1)#47.5, 52.5, 0.1)
+        y_test = np.ones(x_test.shape)# * 0.2
 
         y_eval, x_eval, idx = bi.cutout_nonzero(y, x, buffer=0.0)
 
@@ -481,15 +481,15 @@ class TestBandIntegrate(unittest.TestCase):
             wl,
             d_axis_wl=2,
             platform_name="Sentinel-2A",
-            sensor_name="MSI",
+            sensor_name="msi",
         )
 
         self.assertEqual(d_band.shape, (3, 4, 2))
         np.testing.assert_array_equal(d_band, np.ones(d_band.shape))
 
         expected_calls = [
-            call(d, x, np.full(5, 1), np.arange(5), 2),
-            call(d, x, np.full(5, 2), np.arange(5), 2)
+            call(d, wl, np.full(5, 1), np.arange(5), 2),
+            call(d, wl, np.full(5, 2), np.arange(5), 2)
         ]
 
         for expected_call, real_call in zip(expected_calls, mock.call_args_list):
