@@ -6,7 +6,8 @@ from matheo.band_integration.srf_utils import return_iter_srf, return_band_centr
 from matheo.utils.punpy_util import func_with_unc
 from matheo.utils.function_def import iter_f, f_tophat, f_triangle, f_gaussian
 import numpy as np
-from typing import Union, Tuple, List, Iterable
+import scipy.sparse
+from typing import Optional, Union, Tuple, List, Iterable
 from matheo.interpolation.interpolation import interpolate
 
 
@@ -486,7 +487,7 @@ def spectral_band_int_sensor(
 
     :param d: data to be band integrated
     :param wl: data wavelength coordinates
-    :param platform_name: satellite name
+    :param platform_name: satellite name (must be valid value for
     :param sensor_name: name of instrument on satellite
     :param detector_name: (optional) name of sensor detector. Can be used in sensor has SRF data for for different
     detectors separately - if not specified in this case different
@@ -516,6 +517,42 @@ def spectral_band_int_sensor(
 
     d_band, u_d_band = iter_band_int(d, wl, iter_srf, d_axis_wl)
     return d_band, band_centres, u_d_band
+
+
+def return_r_pixel(
+        x_pixel: np.ndarray,
+        width_pixel: np.ndarray,
+        x: np.ndarray,
+        band_shape: str = "triangle",
+        x_pixel_off: Optional[float] = None,
+) -> np.ndarray:
+    """
+    Returns per pixel response function, expressed as an n_x X n_pixel matrix, where n_x is the length of wavelength coordinates of the response function defintion and n_pixel matrix is the number of pixels.
+
+    :param x_pixel: centre of band response per pixel
+    :param width_pixel: width of band response per pixel
+    :param x: coordinates to define band response functions
+
+    :return: pixel response function matrix
+    """
+
+    # Get function
+    if band_shape == "triangle":
+        f = f_triangle
+    elif band_shape == "tophat":
+        f = f_tophat
+    elif band_shape == "gaussian":
+        f = f_gaussian
+    else:
+        raise ValueError("band_shape must be one of ['triangle', 'tophat', 'gaussian']")
+
+    x_pixel_off = 0.0 if x_pixel_off is None else x_pixel_off
+
+    r_pixel = np.zeros((len(x_pixel), len(x)))
+    for i_pixel, (x_pixel_i, width_pixel_i) in enumerate(zip(x_pixel, width_pixel)):
+        r_pixel[i_pixel, :] = f(x, x_pixel_i + x_pixel_off, width_pixel_i)
+
+    return r_pixel
 
 
 def pixel_int(

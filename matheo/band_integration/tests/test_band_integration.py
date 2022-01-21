@@ -1,6 +1,7 @@
 """
 Tests for band_integration module
 """
+import numpy.testing
 
 from matheo.band_integration import band_integration as bi
 from matheo.utils import function_def as fd
@@ -289,7 +290,6 @@ class FakeBandGen:
             raise StopIteration
 
 
-
 class TestBandIntegrate(unittest.TestCase):
     def test_cutout_nonzero_buffer(self):
         x = np.arange(20, 80, 0.1)
@@ -527,8 +527,6 @@ class TestBandIntegrate(unittest.TestCase):
             np.testing.assert_array_almost_equal(real_call[0][3], expected_call[1][3],decimal=4)
             self.assertEqual(real_call[0][4], expected_call[1][4])
 
-        pass
-
     @patch('matheo.band_integration.band_integration.band_int', wraps=fake_band_int)
     def test_pixel_int(self, mock):
         d = np.zeros((3, 4, 11))
@@ -577,7 +575,20 @@ class TestBandIntegrate(unittest.TestCase):
             np.testing.assert_array_equal(real_call[0][3], expected_call[1][3])
             self.assertEqual(real_call[0][4], expected_call[1][4])
 
-        pass
+    def test_return_r_pixel(self):
+
+        x = np.arange(20)
+        x_pixel = np.array([4., 8., 12.])
+        width_pixel = np.array([1., 1., 2.])
+        r_pixel = bi.return_r_pixel(x_pixel, width_pixel, x, band_shape="tophat")
+
+        expected_r_pixel = np.zeros((3, 20))
+
+        expected_r_pixel[0, 3:6] = 1.
+        expected_r_pixel[1, 7:10] = 1.
+        expected_r_pixel[2, 10:15] = 1.
+
+        numpy.testing.assert_almost_equal(r_pixel, expected_r_pixel)
 
 
 if __name__ == "__main__":
