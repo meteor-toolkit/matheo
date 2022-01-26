@@ -293,10 +293,10 @@ class FakeBandGen:
 class TestBandIntegrate(unittest.TestCase):
     def test_cutout_nonzero_buffer(self):
         x = np.arange(20, 80, 0.1)
-        y = fd.f_tophat(x, 50, 5)
+        y = fd.f_tophat(x, 50, 10)
 
         x_test = np.arange(43,57,0.1)
-        y_test = fd.f_tophat(x_test, 50, 5)
+        y_test = fd.f_tophat(x_test, 50, 10)
 
         y_eval, x_eval, idx = bi.cutout_nonzero(y, x, buffer=0.2)
 
@@ -305,7 +305,7 @@ class TestBandIntegrate(unittest.TestCase):
 
     def test_cutout_nonzero_nobuffer(self):
         x = np.arange(20, 80, 0.1)
-        y = fd.f_tophat(x, 50, 5)
+        y = fd.f_tophat(x, 50, 10)
 
         x_test = np.arange(45,55,0.1)
         y_test = np.ones(x_test.shape)
@@ -317,7 +317,7 @@ class TestBandIntegrate(unittest.TestCase):
 
     def test_get_x_offset(self):
         x = np.arange(0, 40, 1)
-        y = fd.f_tophat(x, 20, 5)
+        y = fd.f_tophat(x, 20, 10)
         y[23] = 1.1
 
         x_off = bi.get_x_offset(y, x, 50)
@@ -579,7 +579,7 @@ class TestBandIntegrate(unittest.TestCase):
 
         x = np.arange(20)
         x_pixel = np.array([4., 8., 12.])
-        width_pixel = np.array([1., 1., 2.])
+        width_pixel = np.array([2., 2., 4.])
         r_pixel = bi.return_r_pixel(x_pixel, width_pixel, x, band_shape="tophat")
 
         expected_r_pixel = np.zeros((3, 20))
