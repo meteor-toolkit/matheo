@@ -348,8 +348,65 @@ class TestBandIntegrate(unittest.TestCase):
 
         self.assertAlmostEqual(x_band, 51.1717, places=3)
 
+    def test__band_int_regular_grid_1d(self):
+        d = np.array([4, 4, 4, 4, 4])
+        x = np.arange(4)
+        r = np.array([1, 1, 1, 1, 1])
+
+        self.assertEqual(bi._band_int_regular_grid(d, x, r), 4)
+
+    def test__band_int_regular_grid_r2d_d3d(self):
+        d = np.array(
+            [[[1, 1, 1, 1, 1], [2, 2, 2, 2, 2], [3, 3, 3, 3, 3]],
+             [[4, 4, 4, 4, 4], [5, 5, 5, 5, 5], [6, 6, 6, 6, 6]]]
+        )
+
+        x = np.arange(4)
+
+        r = np.array(
+            [[1, 1, 1, 1, 1],
+             [1, 1, 1, 1, 1],
+             [1, 1, 1, 1, 1],
+             [1, 1, 1, 1, 1]]
+        )
+
+        d_int = bi._band_int_regular_grid(d, x, r, d_axis_x=2)
+
+        d_int_expected = np.array(
+            [[[1, 1, 1, 1], [2, 2, 2, 2], [3, 3, 3, 3]],
+             [[4, 4, 4, 4], [5, 5, 5, 5], [6, 6, 6, 6]]]
+        )
+
+        np.testing.assert_array_equal(d_int, d_int_expected)
+
+    @patch('matheo.band_integration.band_integration._band_int_regular_grid')
+    def test__band_int_arr_regular_grid(self, mock):
+        x = np.arange(4)
+        x_r = np.arange(4)
+        d_band = bi._band_int_arr("d", x, "r", x_r, d_axis_x=2)
+
+        mock.assert_called_once_with("d", x, "r", d_axis_x=2)
+
     @patch('matheo.band_integration.band_integration._band_int', wraps=fake__band_int)
-    def test_band_int_arr(self, mock):
+    def test_band_int_arr_r1d_d1d(self, mock):
+        d = np.zeros(5)
+        x = np.arange(5)
+        x_r = np.arange(10)
+        r = fd.f_triangle(x_r, 5, 5)
+
+        d_band = bi._band_int_arr(d, x, r, x_r)
+
+        np.testing.assert_array_equal(np.ones(1), d_band)
+
+        self.assertEqual(1, mock.call_count)
+
+        np.testing.assert_array_equal(mock.call_args_list[0][0][0], d)
+        np.testing.assert_array_equal(mock.call_args_list[0][1]["x"], x)
+        np.testing.assert_array_equal(mock.call_args_list[0][1]["r"], r)
+        np.testing.assert_array_equal(mock.call_args_list[0][1]["x_r"], x_r)
+
+    @patch('matheo.band_integration.band_integration._band_int', wraps=fake__band_int)
+    def test_band_int_arr_r1d_d3d(self, mock):
 
         d = np.zeros((3, 4, 5))
         x = np.arange(5)
@@ -365,6 +422,70 @@ class TestBandIntegrate(unittest.TestCase):
         expected_calls = []
         for i in range(12):
             expected_calls.append(call(np.zeros(5), x=x, r=r, x_r=x_r))
+
+        for expected_call, real_call in zip(expected_calls, mock.call_args_list):
+            np.testing.assert_array_equal(real_call[0][0], expected_call[1][0])
+
+            real_kwargs = real_call[1]
+            expected_kwargs = expected_call[2]
+            np.testing.assert_array_equal(real_kwargs["x"], expected_kwargs["x"])
+            np.testing.assert_array_equal(real_kwargs["r"], expected_kwargs["r"])
+            np.testing.assert_array_equal(real_kwargs["x_r"], expected_kwargs["x_r"])
+
+    @patch('matheo.band_integration.band_integration._band_int', wraps=fake__band_int)
+    def test_band_int_arr_r2d_d1d(self, mock):
+        d = np.zeros(5)
+        x = np.arange(5)
+        x_r = np.arange(10)
+        r = np.zeros((5, 10))
+        r[0, :] = 0.
+        r[1, :] = 1.
+        r[2, :] = 2.
+        r[3, :] = 3.
+        r[4, :] = 4.
+
+        d_band = bi._band_int_arr(d, x, r, x_r, d_axis_x=2)
+
+        np.testing.assert_array_equal(np.ones(5), d_band)
+
+        self.assertEqual(5, mock.call_count)
+
+        expected_calls = []
+        for i in range(5):
+            expected_calls.append(call(np.zeros(5), x=x, r=np.full(10, i), x_r=x_r))
+
+        for expected_call, real_call in zip(expected_calls, mock.call_args_list):
+            np.testing.assert_array_equal(real_call[0][0], expected_call[1][0])
+
+            real_kwargs = real_call[1]
+            expected_kwargs = expected_call[2]
+            np.testing.assert_array_equal(real_kwargs["x"], expected_kwargs["x"])
+            np.testing.assert_array_equal(real_kwargs["r"], expected_kwargs["r"])
+            np.testing.assert_array_equal(real_kwargs["x_r"], expected_kwargs["x_r"])
+
+    @patch('matheo.band_integration.band_integration._band_int', wraps=fake__band_int)
+    def test_band_int_arr_r2d_d3d(self, mock):
+        d = np.zeros((3, 4, 5))
+        x = np.arange(5)
+        x_r = np.arange(10)
+        r = np.zeros((6, 10))
+        r[0, :] = 0.
+        r[1, :] = 1.
+        r[2, :] = 2.
+        r[3, :] = 3.
+        r[4, :] = 4.
+        r[5, :] = 5.
+
+        d_band = bi._band_int_arr(d, x, r, x_r, d_axis_x=2)
+
+        np.testing.assert_array_equal(np.ones((3, 4, 6)), d_band)
+
+        self.assertEqual(72, mock.call_count)
+
+        expected_calls = []
+        for i in range(5):
+            for j in range(12):
+                expected_calls.append(call(np.zeros(5), x=x, r=np.full(10, i), x_r=x_r))
 
         for expected_call, real_call in zip(expected_calls, mock.call_args_list):
             np.testing.assert_array_equal(real_call[0][0], expected_call[1][0])
@@ -527,19 +648,85 @@ class TestBandIntegrate(unittest.TestCase):
             np.testing.assert_array_almost_equal(real_call[0][3], expected_call[1][3],decimal=4)
             self.assertEqual(real_call[0][4], expected_call[1][4])
 
+    @patch('matheo.band_integration.band_integration.return_r_pixel')
+    @patch('matheo.band_integration.band_integration.band_int')
+    def test_pixel_int(self, mock_bi, mock_rrp):
+        d = np.zeros(12)
+        x = np.arange(12)
+        x_pixel = np.array([5, 10])
+        width_pixel = np.array([2, 4])
+        d_axis_x = 0
+
+        d_band = bi.pixel_int(
+            d=d,
+            x=x,
+            x_pixel=x_pixel,
+            width_pixel=width_pixel,
+            d_axis_x=d_axis_x
+        )
+
+        mock_bi.assert_called_once_with(d=d, x=x, r=mock_rrp.return_value, x_r=x, d_axis_x=d_axis_x)
+
+    @patch('matheo.band_integration.band_integration.return_r_pixel')
+    @patch('matheo.band_integration.band_integration.band_int')
+    def test_pixel_int_r_sampling(self, mock_bi, mock_rrp):
+        d = np.zeros(12)
+        x = np.arange(12)
+        x_pixel = np.array([5, 10])
+        width_pixel = np.array([2, 4])
+        d_axis_x = 0
+
+        d_band = bi.pixel_int(
+            d=d,
+            x=x,
+            x_pixel=x_pixel,
+            width_pixel=width_pixel,
+            d_axis_x=d_axis_x
+        )
+
+        mock_bi.assert_called_once_with(d=d, x=x, r=mock_rrp.return_value, x_r=x, d_axis_x=d_axis_x)
+
+    @patch('matheo.band_integration.band_integration.return_r_pixel')
+    @patch('matheo.band_integration.band_integration.band_int')
+    def test_pixel_int_r_sampling(self, mock_bi, mock_rrp):
+        d = np.zeros(12)
+        x = np.arange(12)
+        x_pixel = np.array([5, 10])
+        width_pixel = np.array([2, 4])
+        d_axis_x = 0
+
+        d_band = bi.pixel_int(
+            d=d,
+            x=x,
+            x_pixel=x_pixel,
+            width_pixel=width_pixel,
+            r_sampling=1.,
+            band_shape="tophat",
+            d_axis_x=d_axis_x
+        )
+
+        x_r = np.arange(3., 15.)
+
+        np.testing.assert_array_almost_equal(mock_bi.call_args[1]["d"], d)
+        np.testing.assert_array_almost_equal(mock_bi.call_args[1]["x"], x)
+        self.assertEqual(mock_bi.call_args[1]["r"], mock_rrp.return_value)
+        np.testing.assert_array_almost_equal(mock_bi.call_args[1]["x_r"], x_r)
+        self.assertEqual(mock_bi.call_args[1]["d_axis_x"], d_axis_x)
+
     @patch('matheo.band_integration.band_integration.band_int', wraps=fake_band_int)
-    def test_pixel_int(self, mock):
+    def test_pixel_int_eval_iter(self, mock):
         d = np.zeros((3, 4, 11))
         x = np.arange(11)
         x_pixel = np.array([5, 10])
         width_pixel = np.array([2, 4])
 
         d_band = bi.pixel_int(
-            d,
-            x,
-            x_pixel,
-            width_pixel,
+            d=d,
+            x=x,
+            x_pixel=x_pixel,
+            width_pixel=width_pixel,
             d_axis_x=2,
+            eval_iter=True
         )
 
         self.assertEqual(d_band.shape, (3, 4, 2))
@@ -593,32 +780,6 @@ class TestBandIntegrate(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
-
-
-
-
-
-
-
-
-variable_dict = {
-    "measurement1": {
-        "dim": ["x1", "y2", "band1"],
-        "dtype": np.float32,
-        "attributes": {"units": "W m-2 sr-1 m-1"},
-     },
-    "measurement2": {
-        "dim": ["x1", "y2", "band2"],
-        "dtype": np.float32,
-        "attributes": {"units": "W m-2 sr-1 m-1"},
-     },
-    "band_blue": {
-        "dim": ["x", "y"],
-        "dtype": np.float32,
-        "attributes": {"units": "W m-2 sr-1 m-1"},
-     }
- }
-
 
 
 
