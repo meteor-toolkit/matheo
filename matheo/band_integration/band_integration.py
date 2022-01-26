@@ -111,7 +111,7 @@ def _band_int_regular_grid(
 
     :param d: data to be band integrated
     :param x: data and band response function coordinates along band integration axis, must be evenly spaced
-    :param r: band response function(s). For a single band, a 1D length-M array is required, where M is the length of ``x``. Multiple band may be defined in an N x M array, where N is number of response bands.
+    :param r: band response function(s). For a single band, a 1D length-M array is required, where M is the length of ``x``. Multiple bands may be defined in an N x M array, where N is number of response bands.
     :param d_axis_x: (default 0) x axis in data array
     :return: band integrated data
     """
@@ -139,7 +139,7 @@ def _band_int_arr(
 
     :param d: data to be band integrated
     :param x: data coordinates along band integration axis
-    :param r: band response function(s). For a single band, a 1D length-M array is required, where M is the length of ``x``. Multiple band may be defined in an N x M array, where N is number of response bands.
+    :param r: band response function(s). For a single band, a 1D length-M array is required, where M is the length of ``x``. Multiple bands may be defined in an N x M array, where N is number of response bands.
     :param x_r: band response function coordinates
     :param d_axis_x: (default 0) x axis in data array
     :return: band integrated data
@@ -205,9 +205,9 @@ def _band_int2ax_arr(
     :param d: data to be band integrated
     :param x: data coordinates along first band integration axis
     :param y: data coordinates along second band integration axis
-    :param rx: first axis band response function(s). For a single band, a 1D length-M array is required, where M is the length of ``x_rx``. Multiple band may be defined in an N x M array, where N is number of response bands.
+    :param rx: first axis band response function(s). For a single band, a 1D length-M array is required, where M is the length of ``x_rx``. Multiple bands may be defined in an N x M array, where N is number of response bands.
     :param x_rx: first band response function coordinates
-    :param ry: second axis band response function(s). For a single band, a 1D length-M array is required, where M is the length of ``y_ry``. Multiple band may be defined in an N x M array, where N is number of response bands.
+    :param ry: second axis band response function(s). For a single band, a 1D length-M array is required, where M is the length of ``y_ry``. Multiple bands may be defined in an N x M array, where N is number of response bands.
     :param y_ry: second band response function coordinates
     :param d_axis_x: (default 0) x axis in data array
     :param d_axis_y: (default 1) y axis in data array
@@ -246,11 +246,11 @@ def _band_int3ax_arr(
     :param x: data coordinates along first band integration axis
     :param y: data coordinates along second band integration axis
     :param z: data coordinates along third band integration axis
-    :param rx: first axis band response function(s). For a single band, a 1D length-M array is required, where M is the length of ``x_rx``. Multiple band may be defined in an N x M array, where N is number of response bands.
+    :param rx: first axis band response function(s). For a single band, a 1D length-M array is required, where M is the length of ``x_rx``. Multiple bands may be defined in an N x M array, where N is number of response bands.
     :param x_rx: first band response function coordinates
-    :param ry: second axis band response function(s). For a single band, a 1D length-M array is required, where M is the length of ``y_ry``. Multiple band may be defined in an N x M array, where N is number of response bands.
+    :param ry: second axis band response function(s). For a single band, a 1D length-M array is required, where M is the length of ``y_ry``. Multiple bands may be defined in an N x M array, where N is number of response bands.
     :param y_ry: second band response function coordinates
-    :param rz: third axis band response function(s). For a single band, a 1D length-M array is required, where M is the length of ``z_rz``. Multiple band may be defined in an N x M array, where N is number of response bands.
+    :param rz: third axis band response function(s). For a single band, a 1D length-M array is required, where M is the length of ``z_rz``. Multiple bands may be defined in an N x M array, where N is number of response bands.
     :param z_rz: third band response function coordinates
     :param d_axis_x: (default 0) x axis in data array
     :param d_axis_y: (default 1) y axis in data array
@@ -288,7 +288,7 @@ def band_int(
 
     :param d: data to be band integrated
     :param x: data coordinates
-    :param r: band response function(s). For a single band, a 1D length-M array is required, where M is the length of ``x_r``. Multiple band may be defined in an N x M array, where N is number of response bands.
+    :param r: band response function(s). For a single band, a 1D length-M array is required, where M is the length of ``x_r``. Multiple bands may be defined in an N x M array, where N is number of response bands.
     :param x_r: band response function coordinates
     :param d_axis_x: (default 0) if d greater than 1D, specify axis to band integrate along
     :param x_r_centre: (optional) centre of band response function in data coordinates, if there is an offset.
@@ -347,9 +347,9 @@ def band_int2ax(
     :param d: data to be band integrated
     :param x: data coordinates along first band integration axis
     :param y: data coordinates along second band integration axis
-    :param rx: first axis band response function(s). For a single band, a 1D length-M array is required, where M is the length of ``x_rx``. Multiple band may be defined in an N x M array, where N is number of response bands.
+    :param rx: first axis band response function(s). For a single band, a 1D length-M array is required, where M is the length of ``x_rx``. Multiple bands may be defined in an N x M array, where N is number of response bands.
     :param x_rx: first band response function coordinates
-    :param ry: second axis band response function(s). For a single band, a 1D length-M array is required, where M is the length of ``y_ry``. Multiple band may be defined in an N x M array, where N is number of response bands.
+    :param ry: second axis band response function(s). For a single band, a 1D length-M array is required, where M is the length of ``y_ry``. Multiple bands may be defined in an N x M array, where N is number of response bands.
     :param y_ry: second band response function coordinates
     :param d_axis_x: (default 0) x axis in data array
     :param d_axis_y: (default 1) y axis in data array
@@ -433,11 +433,11 @@ def band_int3ax(
     :param x: data coordinates along first band integration axis
     :param y: data coordinates along second band integration axis
     :param z: data coordinates along third band integration axis
-    :param rx: first axis band response function(s). For a single band, a 1D length-M array is required, where M is the length of ``x_rx``. Multiple band may be defined in an N x M array, where N is number of response bands.
+    :param rx: first axis band response function(s). For a single band, a 1D length-M array is required, where M is the length of ``x_rx``. Multiple bands may be defined in an N x M array, where N is number of response bands.
     :param x_rx: first band response function coordinates
-    :param ry: second axis band response function(s). For a single band, a 1D length-M array is required, where M is the length of ``y_ry``. Multiple band may be defined in an N x M array, where N is number of response bands.
+    :param ry: second axis band response function(s). For a single band, a 1D length-M array is required, where M is the length of ``y_ry``. Multiple bands may be defined in an N x M array, where N is number of response bands.
     :param y_ry: second band response function coordinates
-    :param rz: third axis band response function(s). For a single band, a 1D length-M array is required, where M is the length of ``z_rz``. Multiple band may be defined in an N x M array, where N is number of response bands.
+    :param rz: third axis band response function(s). For a single band, a 1D length-M array is required, where M is the length of ``z_rz``. Multiple bands may be defined in an N x M array, where N is number of response bands.
     :param z_rz: third band response function coordinates
     :param d_axis_x: (default 0) x axis in data array
     :param d_axis_y: (default 1) y axis in data array
