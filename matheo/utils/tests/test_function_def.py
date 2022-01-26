@@ -55,7 +55,7 @@ class TestFunctionDef(unittest.TestCase):
             centres=np.array([5.0, 6.0, 7.0]),
             widths=np.array([2.0, 4.0, 8.0]),
             x_sampling=1.0,
-            xlim_width=1.5
+            xlim_width=1.5 / 2
         )
 
         x_expected = np.arange(1, 14, 1)
@@ -74,7 +74,7 @@ class TestFunctionDef(unittest.TestCase):
             centres=np.array([5.0, 6.0, 7.0]),
             widths=np.array([2.0, 4.0, 8.0]),
             x_sampling=1.0,
-            xlim_width=1.5,
+            xlim_width=1.5 / 2,
             normalise=True
         )
 
@@ -94,7 +94,7 @@ class TestFunctionDef(unittest.TestCase):
             centres=np.array([5.0, 6.0, 7.0]),
             widths=np.array([2.0, 4.0, 8.0]),
             x_sampling=1.0,
-            xlim_width=2
+            xlim_width=1
         )
 
         x_expected = [np.arange(3, 8, 1), np.arange(2, 11, 1), np.arange(-1, 16, 1)]
@@ -114,7 +114,7 @@ class TestFunctionDef(unittest.TestCase):
             centres=np.array([5.0, 6.0, 7.0]),
             widths=np.array([2.0, 4.0, 8.0]),
             x_sampling=1.0,
-            xlim_width=2,
+            xlim_width=1,
             normalise=True
         )
 
