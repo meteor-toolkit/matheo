@@ -17,14 +17,14 @@ def f_tophat(x: np.ndarray, centre: float, width: float) -> np.ndarray:
 
     :param x: coordinate array
     :param centre: x position of centre top hat
-    :param width: half width of top hat
+    :param width: FWHM width of top hat
 
     :return: top hat function
     """
 
     y = np.ones(x.shape)
-    y[x < centre - width] = 0
-    y[x > centre + width] = 0
+    y[x < centre - width / 2] = 0
+    y[x > centre + width / 2] = 0
 
     return y
 
@@ -35,12 +35,12 @@ def f_gaussian(x: np.ndarray, centre: float, width: float) -> np.ndarray:
 
     :param x: coordinate array
     :param centre: mean of distribution
-    :param width: std of distribution
+    :param width: FWHM of distribution
 
     :return: gaussian function
     """
-
-    return norm.pdf(x, centre, width / 2.0) * np.sqrt(2 * np.pi) * width / 2
+    std = width / (2 * np.sqrt(2 * np.log(2)))
+    return norm.pdf(x, centre, std) * np.sqrt(2 * np.pi) * std
 
 
 def f_triangle(x: np.ndarray, centre: float, width: float) -> np.ndarray:
@@ -49,7 +49,7 @@ def f_triangle(x: np.ndarray, centre: float, width: float) -> np.ndarray:
 
     :param x: coordinate array
     :param centre: x position of start of triangle
-    :param width: half width of base of triangle
+    :param width: half width of base of triangle (i.e. FWHM)
 
     :return: top hat function
     :rtype: numpy.ndarray
