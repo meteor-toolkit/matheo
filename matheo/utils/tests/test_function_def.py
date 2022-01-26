@@ -16,7 +16,7 @@ class TestFunctionDef(unittest.TestCase):
     def test_f_tophat(self):
 
         x = np.arange(0, 11, 1)
-        y = fd.f_tophat(x, 5, 2)
+        y = fd.f_tophat(x, 5, 4)
 
         np.testing.assert_array_equal(y, np.array([0., 0., 0., 1., 1., 1., 1., 1., 0., 0., 0.]))
 
@@ -30,7 +30,7 @@ class TestFunctionDef(unittest.TestCase):
     def test_f_gaussian(self):
 
         x = np.arange(0, 11, 1)
-        y = fd.f_gaussian(x, 5, 2)
+        y = fd.f_gaussian(x, 5, 2*np.sqrt(2*np.log(2))*2/2)
 
         np.testing.assert_array_almost_equal(
             y,
@@ -41,7 +41,7 @@ class TestFunctionDef(unittest.TestCase):
 
     def test_f_normalised_tophat(self):
         x = np.arange(0, 11, 1)
-        y = fd.f_normalised(fd.f_tophat, x, 5, 2)
+        y = fd.f_normalised(fd.f_tophat, x, 5, 4)
 
         np.testing.assert_array_almost_equal(
             y,
@@ -53,7 +53,7 @@ class TestFunctionDef(unittest.TestCase):
         y, x = fd.repeat_f(
             f=fd.f_tophat,
             centres=np.array([5.0, 6.0, 7.0]),
-            widths=np.array([1.0, 2.0, 4.0]),
+            widths=np.array([2.0, 4.0, 8.0]),
             x_sampling=1.0,
             xlim_width=1.5
         )
@@ -72,7 +72,7 @@ class TestFunctionDef(unittest.TestCase):
         y, x = fd.repeat_f(
             f=fd.f_tophat,
             centres=np.array([5.0, 6.0, 7.0]),
-            widths=np.array([1.0, 2.0, 4.0]),
+            widths=np.array([2.0, 4.0, 8.0]),
             x_sampling=1.0,
             xlim_width=1.5,
             normalise=True
@@ -92,7 +92,7 @@ class TestFunctionDef(unittest.TestCase):
         f_iter = fd.iter_f(
             f=fd.f_tophat,
             centres=np.array([5.0, 6.0, 7.0]),
-            widths=np.array([1.0, 2.0, 4.0]),
+            widths=np.array([2.0, 4.0, 8.0]),
             x_sampling=1.0,
             xlim_width=2
         )
@@ -112,7 +112,7 @@ class TestFunctionDef(unittest.TestCase):
         f_iter = fd.iter_f(
             f=fd.f_tophat,
             centres=np.array([5.0, 6.0, 7.0]),
-            widths=np.array([1.0, 2.0, 4.0]),
+            widths=np.array([2.0, 4.0, 8.0]),
             x_sampling=1.0,
             xlim_width=2,
             normalise=True
