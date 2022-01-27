@@ -116,11 +116,15 @@ def _band_int_regular_grid(
     :return: band integrated data
     """
 
+    if r.ndim == 1:
+        r_sum = np.sum(r)
+    else:
+        r_sum = np.sum(r, axis=1)
+
     if d.ndim == 1:
-        return np.dot(r, d) / np.sum(r, axis=1)
+        return np.dot(r, d) / r_sum
 
     r_dot_d = np.moveaxis(np.dot(r, np.moveaxis(d, d_axis_x, 1)), 0, d_axis_x)
-    r_sum = np.sum(r, axis=1)
 
     sli = [np.newaxis] * d.ndim
     sli[d_axis_x] = slice(None)

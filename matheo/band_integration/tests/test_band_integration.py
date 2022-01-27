@@ -348,7 +348,7 @@ class TestBandIntegrate(unittest.TestCase):
 
         self.assertAlmostEqual(x_band, 51.1717, places=3)
 
-    def test__band_int_regular_grid_1d(self):
+    def test__band_int_regular_grid_r1d_d1d(self):
         d = np.array([4, 4, 4, 4, 4])
         x = np.arange(4)
         r = np.array([1, 1, 1, 1, 1])
