@@ -124,7 +124,11 @@ def _band_int_regular_grid(
     if d.ndim == 1:
         return np.dot(r, d) / r_sum
 
-    r_dot_d = np.moveaxis(np.dot(r, np.moveaxis(d, d_axis_x, 1)), 0, d_axis_x)
+    dot_dim = 1
+    if (r.ndim == 2) and (d.ndim == 2):
+        dot_dim = 0
+
+    r_dot_d = np.moveaxis(np.dot(r, np.moveaxis(d, d_axis_x, dot_dim)), 0, d_axis_x)
 
     sli = [np.newaxis] * d.ndim
     sli[d_axis_x] = slice(None)

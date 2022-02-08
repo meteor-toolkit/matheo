@@ -355,6 +355,28 @@ class TestBandIntegrate(unittest.TestCase):
 
         self.assertEqual(bi._band_int_regular_grid(d, x, r), 4)
 
+    def test__band_int_regular_grid_r2d_d2d(self):
+        d = np.array(
+            [[1, 1, 1, 1, 1], [2, 2, 2, 2, 2], [3, 3, 3, 3, 3]],
+        )
+
+        x = np.arange(4)
+
+        r = np.array(
+            [[1, 1, 1, 1, 1],
+             [1, 1, 1, 1, 1],
+             [1, 1, 1, 1, 1],
+             [1, 1, 1, 1, 1]]
+        )
+
+        d_int = bi._band_int_regular_grid(d, x, r, d_axis_x=1)
+
+        d_int_expected = np.array(
+            [[1, 1, 1, 1], [2, 2, 2, 2], [3, 3, 3, 3]],
+        )
+
+        np.testing.assert_array_equal(d_int, d_int_expected)
+
     def test__band_int_regular_grid_r2d_d3d(self):
         d = np.array(
             [[[1, 1, 1, 1, 1], [2, 2, 2, 2, 2], [3, 3, 3, 3, 3]],
