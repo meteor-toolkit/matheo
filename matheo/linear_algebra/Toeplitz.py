@@ -3,7 +3,7 @@
 """___Built-In Modules___"""
 import numpy as np
 import numpy.matlib
-from scipy import fft, ifft
+from scipy import fft
 import sys
 
 """___Third-Party Modules___"""
@@ -52,7 +52,7 @@ class Toeplitz:
         fc = np.matlib.repmat(fft.fft(ct), n, 1)[0]
 
         # FFT multiplication
-        cy = ifft(np.multiply(fc, fft.fft(y)))
+        cy = fft.ifft(np.multiply(fc, fft.fft(y)))
         cy = cy.real
         if n == 1:
             return cy[0:m]

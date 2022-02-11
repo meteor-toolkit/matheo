@@ -25,6 +25,16 @@ setup(
     description="Matheo is a python package with mathematical algorithms for use in earth observation data and tools.",
     long_description=read("README.rst"),
     packages=find_packages(exclude=("tests",)),
-    install_requires=["numpy", "numdifftools", "scipy", "xarray", "pyspectral"],
+    install_requires=["numpy",
+                      "numdifftools",
+                      "scipy",
+                      "xarray",
+                      "pyspectral",
+                      "punpy @ git+https://gitlab-ci-token:Hk2jqEZTqX59aiAz19Tg@gitlab.npl.co.uk/eco/tools/punpy@v0.23#egg=punpy",
+                      ],
+    dependency_links=[
+        "git+https://gitlab-ci-token:Hk2jqEZTqX59aiAz19Tg@gitlab.npl.co.uk/eco/tools/punpy@v0.23#egg=punpy",
+    ],
+
     extras_require={"dev": ["pre-commit", "tox", "sphinx", "sphinx_rtd_theme"]},
 )

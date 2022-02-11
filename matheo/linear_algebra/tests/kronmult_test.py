@@ -15,8 +15,8 @@ Q[1] = np.array(toeplitz([4, 5, 2, 8, 1]))
 X = np.linspace(1, 15, 15)
 
 
-TPclass = TensorProduct(Q, X)
-print(TPclass.kronmult())
+TPclass = TensorProduct()
+print(TPclass.kronmult(X, Q))
 
 ## If Q is vectors
 Q2 = {}

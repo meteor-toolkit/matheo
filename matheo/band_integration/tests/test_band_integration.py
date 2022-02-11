@@ -1,6 +1,7 @@
 """
 Tests for band_integration module
 """
+import numpy.testing
 
 from matheo.band_integration import band_integration as bi
 from matheo.utils import function_def as fd
@@ -289,14 +290,13 @@ class FakeBandGen:
             raise StopIteration
 
 
-
 class TestBandIntegrate(unittest.TestCase):
     def test_cutout_nonzero_buffer(self):
         x = np.arange(20, 80, 0.1)
-        y = fd.f_tophat(x, 50, 5)
+        y = fd.f_tophat(x, 50, 10)
 
-        x_test = np.arange(46.5, 53.5, 0.1)
-        y_test = fd.f_tophat(x_test, 50, 5)
+        x_test = np.arange(43,57,0.1)
+        y_test = fd.f_tophat(x_test, 50, 10)
 
         y_eval, x_eval, idx = bi.cutout_nonzero(y, x, buffer=0.2)
 
@@ -305,10 +305,10 @@ class TestBandIntegrate(unittest.TestCase):
 
     def test_cutout_nonzero_nobuffer(self):
         x = np.arange(20, 80, 0.1)
-        y = fd.f_tophat(x, 50, 5)
+        y = fd.f_tophat(x, 50, 10)
 
-        x_test = np.arange(47.5, 52.5, 0.1)
-        y_test = np.ones(x_test.shape) * 0.2
+        x_test = np.arange(45,55,0.1)
+        y_test = np.ones(x_test.shape)
 
         y_eval, x_eval, idx = bi.cutout_nonzero(y, x, buffer=0.0)
 
@@ -317,7 +317,7 @@ class TestBandIntegrate(unittest.TestCase):
 
     def test_get_x_offset(self):
         x = np.arange(0, 40, 1)
-        y = fd.f_tophat(x, 20, 5)
+        y = fd.f_tophat(x, 20, 10)
         y[23] = 1.1
 
         x_off = bi.get_x_offset(y, x, 50)
@@ -348,8 +348,87 @@ class TestBandIntegrate(unittest.TestCase):
 
         self.assertAlmostEqual(x_band, 51.1717, places=3)
 
+    def test__band_int_regular_grid_r1d_d1d(self):
+        d = np.array([4, 4, 4, 4, 4])
+        x = np.arange(4)
+        r = np.array([1, 1, 1, 1, 1])
+
+        self.assertEqual(bi._band_int_regular_grid(d, x, r), 4)
+
+    def test__band_int_regular_grid_r2d_d2d(self):
+        d = np.array(
+            [[1, 1, 1, 1, 1], [2, 2, 2, 2, 2], [3, 3, 3, 3, 3]],
+        )
+
+        x = np.arange(4)
+
+        r = np.array(
+            [[1, 1, 1, 1, 1],
+             [1, 1, 1, 1, 1],
+             [1, 1, 1, 1, 1],
+             [1, 1, 1, 1, 1]]
+        )
+
+        d_int = bi._band_int_regular_grid(d, x, r, d_axis_x=1)
+
+        d_int_expected = np.array(
+            [[1, 1, 1, 1], [2, 2, 2, 2], [3, 3, 3, 3]],
+        )
+
+        np.testing.assert_array_equal(d_int, d_int_expected)
+
+    def test__band_int_regular_grid_r2d_d3d(self):
+        d = np.array(
+            [[[1, 1, 1, 1, 1], [2, 2, 2, 2, 2], [3, 3, 3, 3, 3]],
+             [[4, 4, 4, 4, 4], [5, 5, 5, 5, 5], [6, 6, 6, 6, 6]]]
+        )
+
+        x = np.arange(4)
+
+        r = np.array(
+            [[1, 1, 1, 1, 1],
+             [1, 1, 1, 1, 1],
+             [1, 1, 1, 1, 1],
+             [1, 1, 1, 1, 1]]
+        )
+
+        d_int = bi._band_int_regular_grid(d, x, r, d_axis_x=2)
+
+        d_int_expected = np.array(
+            [[[1, 1, 1, 1], [2, 2, 2, 2], [3, 3, 3, 3]],
+             [[4, 4, 4, 4], [5, 5, 5, 5], [6, 6, 6, 6]]]
+        )
+
+        np.testing.assert_array_equal(d_int, d_int_expected)
+
+    @patch('matheo.band_integration.band_integration._band_int_regular_grid')
+    def test__band_int_arr_regular_grid(self, mock):
+        x = np.arange(4)
+        x_r = np.arange(4)
+        d_band = bi._band_int_arr("d", x, "r", x_r, d_axis_x=2)
+
+        mock.assert_called_once_with("d", x, "r", d_axis_x=2)
+
     @patch('matheo.band_integration.band_integration._band_int', wraps=fake__band_int)
-    def test_band_int_arr(self, mock):
+    def test_band_int_arr_r1d_d1d(self, mock):
+        d = np.zeros(5)
+        x = np.arange(5)
+        x_r = np.arange(10)
+        r = fd.f_triangle(x_r, 5, 5)
+
+        d_band = bi._band_int_arr(d, x, r, x_r)
+
+        np.testing.assert_array_equal(np.ones(1), d_band)
+
+        self.assertEqual(1, mock.call_count)
+
+        np.testing.assert_array_equal(mock.call_args_list[0][0][0], d)
+        np.testing.assert_array_equal(mock.call_args_list[0][1]["x"], x)
+        np.testing.assert_array_equal(mock.call_args_list[0][1]["r"], r)
+        np.testing.assert_array_equal(mock.call_args_list[0][1]["x_r"], x_r)
+
+    @patch('matheo.band_integration.band_integration._band_int', wraps=fake__band_int)
+    def test_band_int_arr_r1d_d3d(self, mock):
 
         d = np.zeros((3, 4, 5))
         x = np.arange(5)
@@ -365,6 +444,70 @@ class TestBandIntegrate(unittest.TestCase):
         expected_calls = []
         for i in range(12):
             expected_calls.append(call(np.zeros(5), x=x, r=r, x_r=x_r))
+
+        for expected_call, real_call in zip(expected_calls, mock.call_args_list):
+            np.testing.assert_array_equal(real_call[0][0], expected_call[1][0])
+
+            real_kwargs = real_call[1]
+            expected_kwargs = expected_call[2]
+            np.testing.assert_array_equal(real_kwargs["x"], expected_kwargs["x"])
+            np.testing.assert_array_equal(real_kwargs["r"], expected_kwargs["r"])
+            np.testing.assert_array_equal(real_kwargs["x_r"], expected_kwargs["x_r"])
+
+    @patch('matheo.band_integration.band_integration._band_int', wraps=fake__band_int)
+    def test_band_int_arr_r2d_d1d(self, mock):
+        d = np.zeros(5)
+        x = np.arange(5)
+        x_r = np.arange(10)
+        r = np.zeros((5, 10))
+        r[0, :] = 0.
+        r[1, :] = 1.
+        r[2, :] = 2.
+        r[3, :] = 3.
+        r[4, :] = 4.
+
+        d_band = bi._band_int_arr(d, x, r, x_r, d_axis_x=2)
+
+        np.testing.assert_array_equal(np.ones(5), d_band)
+
+        self.assertEqual(5, mock.call_count)
+
+        expected_calls = []
+        for i in range(5):
+            expected_calls.append(call(np.zeros(5), x=x, r=np.full(10, i), x_r=x_r))
+
+        for expected_call, real_call in zip(expected_calls, mock.call_args_list):
+            np.testing.assert_array_equal(real_call[0][0], expected_call[1][0])
+
+            real_kwargs = real_call[1]
+            expected_kwargs = expected_call[2]
+            np.testing.assert_array_equal(real_kwargs["x"], expected_kwargs["x"])
+            np.testing.assert_array_equal(real_kwargs["r"], expected_kwargs["r"])
+            np.testing.assert_array_equal(real_kwargs["x_r"], expected_kwargs["x_r"])
+
+    @patch('matheo.band_integration.band_integration._band_int', wraps=fake__band_int)
+    def test_band_int_arr_r2d_d3d(self, mock):
+        d = np.zeros((3, 4, 5))
+        x = np.arange(5)
+        x_r = np.arange(10)
+        r = np.zeros((6, 10))
+        r[0, :] = 0.
+        r[1, :] = 1.
+        r[2, :] = 2.
+        r[3, :] = 3.
+        r[4, :] = 4.
+        r[5, :] = 5.
+
+        d_band = bi._band_int_arr(d, x, r, x_r, d_axis_x=2)
+
+        np.testing.assert_array_equal(np.ones((3, 4, 6)), d_band)
+
+        self.assertEqual(72, mock.call_count)
+
+        expected_calls = []
+        for i in range(5):
+            for j in range(12):
+                expected_calls.append(call(np.zeros(5), x=x, r=np.full(10, i), x_r=x_r))
 
         for expected_call, real_call in zip(expected_calls, mock.call_args_list):
             np.testing.assert_array_equal(real_call[0][0], expected_call[1][0])
@@ -481,47 +624,157 @@ class TestBandIntegrate(unittest.TestCase):
             wl,
             d_axis_wl=2,
             platform_name="Sentinel-2A",
-            sensor_name="MSI",
+            sensor_name="msi",
         )
 
         self.assertEqual(d_band.shape, (3, 4, 2))
         np.testing.assert_array_equal(d_band, np.ones(d_band.shape))
 
         expected_calls = [
-            call(d, x, np.full(5, 1), np.arange(5), 2),
-            call(d, x, np.full(5, 2), np.arange(5), 2)
+            call(d, wl, np.array([0.00000000e+00, 0.00000000e+00, 1.77574169e-03, 4.07306058e-03, 3.62614286e-03,
+                                  3.51519883e-03, 5.72916260e-03, 3.78029188e-03, 2.63673207e-03, 1.26211275e-03,
+                                  1.98758300e-03, 1.36891310e-03, 1.25044398e-03, 4.63454402e-04, 8.14292987e-04,
+                                  1.37643155e-03, 1.48508593e-03, 1.82373472e-03, 1.62681751e-03, 4.39206185e-03,
+                                  2.90080979e-02, 1.18745930e-01, 3.23875070e-01, 5.72819233e-01, 7.14727521e-01,
+                                  7.61967778e-01, 7.89297044e-01, 8.08623850e-01, 8.10893834e-01, 8.24198782e-01,
+                                  8.54158103e-01, 8.70790899e-01, 8.87310982e-01, 9.26199257e-01, 9.82281506e-01,
+                                  1.00000000e+00, 9.75238204e-01, 9.35963392e-01, 8.89971495e-01, 8.50210488e-01,
+                                  8.25694501e-01, 7.83902407e-01, 6.14174187e-01, 3.30071092e-01, 1.24108315e-01,
+                                  4.36569415e-02, 1.47495950e-02, 0.00000000e+00, 0.00000000e+00]), np.arange(410,459,1), 2),
+            call(d, wl, np.array([0.00000000e+00,0.00000000e+00,1.03154285e-02,3.00419331e-02,2.68758908e-02,
+                                  2.41431501e-02,2.02100649e-02,2.26934887e-02,2.45640874e-02,1.66670047e-02,
+                                  2.14131325e-02,1.61442198e-02,2.13072076e-02,1.84660926e-02,1.81850176e-02,
+                                  1.76790543e-02,1.91148259e-02,1.92464273e-02,2.73957457e-02,4.25553098e-02,
+                                  7.22982958e-02,1.53743222e-01,3.27992260e-01,5.53367853e-01,7.10111678e-01,
+                                  7.52851784e-01,7.52326906e-01,7.56680787e-01,7.63269484e-01,7.62394249e-01,
+                                  7.85251498e-01,8.15466702e-01,8.61791730e-01,8.92826021e-01,9.19522107e-01,
+                                  9.19006467e-01,9.13157523e-01,9.00353670e-01,8.89896929e-01,8.82324576e-01,
+                                  8.76061201e-01,8.84299874e-01,9.06955421e-01,9.32320833e-01,9.39472497e-01,
+                                  9.43835437e-01,9.22040880e-01,8.86023104e-01,8.47436070e-01,8.12516868e-01,
+                                  7.82397091e-01,7.73108721e-01,7.72090554e-01,7.87426531e-01,8.12171757e-01,
+                                  8.46050501e-01,8.87679935e-01,9.27939951e-01,9.50692356e-01,9.65733111e-01,
+                                  9.69382524e-01,9.65702951e-01,9.58320022e-01,9.54050660e-01,9.51782703e-01,
+                                  9.56997216e-01,9.65565145e-01,9.77051377e-01,9.77095723e-01,9.74366069e-01,
+                                  9.59031820e-01,9.35063183e-01,9.01901364e-01,8.71657908e-01,8.44024420e-01,
+                                  8.22808504e-01,8.15360427e-01,8.20576370e-01,8.39514911e-01,8.69921684e-01,
+                                  9.15262043e-01,9.60670292e-01,9.91636992e-01,1.00000000e+00,9.83560979e-01,
+                                  9.11307633e-01,7.40182579e-01,5.03958583e-01,3.05015504e-01,1.80046052e-01,
+                                  1.07383423e-01,6.59359172e-02,4.20774557e-02,2.66212877e-02,1.43395998e-02,
+                                  2.65778741e-03,8.18224275e-04,0.00000000e+00,0.00000000e+00]), np.arange(437,536,1), 2)
         ]
 
         for expected_call, real_call in zip(expected_calls, mock.call_args_list):
             np.testing.assert_array_equal(real_call[0][0], expected_call[1][0])
             np.testing.assert_array_equal(real_call[0][1], expected_call[1][1])
-            np.testing.assert_array_equal(real_call[0][2], expected_call[1][2])
-            np.testing.assert_array_equal(real_call[0][3], expected_call[1][3])
+            np.testing.assert_array_almost_equal(real_call[0][2], expected_call[1][2])
+            np.testing.assert_array_almost_equal(real_call[0][3], expected_call[1][3],decimal=4)
             self.assertEqual(real_call[0][4], expected_call[1][4])
 
-        pass
+    @patch('matheo.band_integration.band_integration.return_r_pixel')
+    @patch('matheo.band_integration.band_integration.band_int')
+    def test_pixel_int(self, mock_bi, mock_rrp):
+        d = np.zeros(12)
+        x = np.arange(12)
+        x_pixel = np.array([5, 10])
+        width_pixel = np.array([2, 4])
+        d_axis_x = 0
+
+        d_band = bi.pixel_int(
+            d=d,
+            x=x,
+            x_pixel=x_pixel,
+            width_pixel=width_pixel,
+            d_axis_x=d_axis_x
+        )
+
+        mock_bi.assert_called_once_with(d=d, x=x, r=mock_rrp.return_value, x_r=x, d_axis_x=d_axis_x)
+
+    @patch('matheo.band_integration.band_integration.return_r_pixel')
+    @patch('matheo.band_integration.band_integration.band_int')
+    def test_pixel_int_r_sampling(self, mock_bi, mock_rrp):
+        d = np.zeros(12)
+        x = np.arange(12)
+        x_pixel = np.array([5, 10])
+        width_pixel = np.array([2, 4])
+        d_axis_x = 0
+
+        d_band = bi.pixel_int(
+            d=d,
+            x=x,
+            x_pixel=x_pixel,
+            width_pixel=width_pixel,
+            d_axis_x=d_axis_x
+        )
+
+        mock_bi.assert_called_once_with(d=d, x=x, r=mock_rrp.return_value, x_r=x, d_axis_x=d_axis_x)
+
+    @patch('matheo.band_integration.band_integration.return_r_pixel')
+    @patch('matheo.band_integration.band_integration.band_int')
+    def test_pixel_int_r_sampling(self, mock_bi, mock_rrp):
+        d = np.zeros(12)
+        x = np.arange(12)
+        x_pixel = np.array([5, 10])
+        width_pixel = np.array([2, 4])
+        d_axis_x = 0
+
+        d_band = bi.pixel_int(
+            d=d,
+            x=x,
+            x_pixel=x_pixel,
+            width_pixel=width_pixel,
+            r_sampling=1.,
+            band_shape="tophat",
+            d_axis_x=d_axis_x
+        )
+
+        x_r = np.arange(3., 15.)
+
+        np.testing.assert_array_almost_equal(mock_bi.call_args[1]["d"], d)
+        np.testing.assert_array_almost_equal(mock_bi.call_args[1]["x"], x)
+        self.assertEqual(mock_bi.call_args[1]["r"], mock_rrp.return_value)
+        np.testing.assert_array_almost_equal(mock_bi.call_args[1]["x_r"], x_r)
+        self.assertEqual(mock_bi.call_args[1]["d_axis_x"], d_axis_x)
 
     @patch('matheo.band_integration.band_integration.band_int', wraps=fake_band_int)
-    def test_pixel_int(self, mock):
+    def test_pixel_int_eval_iter(self, mock):
         d = np.zeros((3, 4, 11))
         x = np.arange(11)
         x_pixel = np.array([5, 10])
         width_pixel = np.array([2, 4])
 
         d_band = bi.pixel_int(
-            d,
-            x,
-            x_pixel,
-            width_pixel,
+            d=d,
+            x=x,
+            x_pixel=x_pixel,
+            width_pixel=width_pixel,
             d_axis_x=2,
+            eval_iter=True
         )
 
         self.assertEqual(d_band.shape, (3, 4, 2))
         np.testing.assert_array_equal(d_band, np.ones(d_band.shape))
 
+        x_r_0 = np.arange(5-2,5+2+1,0.01) # (centre-width, centre+width+1, 0.01)
+        # r_0 = f_triangle(x_r_0, centre, width):
+        r_0 = np.zeros(x_r_0.shape)
+        first_half = np.logical_and(5-2 < x_r_0, x_r_0 <= 5)
+        r_0[first_half] = (x_r_0[first_half] - (5-2)) / (x_pixel[0] - (5-2))
+
+        second_half = np.logical_and(x_pixel[0] < x_r_0, x_r_0 < (5+2))
+        r_0[second_half] = ((5+2) - x_r_0[second_half]) / ((5+2) - 5)
+
+        x_r_1 = np.arange(10-4, 10+4+1, 0.01) # (centre-width, centre+width+1, 0.01)
+        # r_1 = f_triangle(x_r_1, centre, width):
+        r_1 = np.zeros(x_r_1.shape)
+        first_half = np.logical_and((10-4) < x_r_1, x_r_1 <= 10)
+        r_1[first_half] = (x_r_1[first_half] - (10-4)) / (10 - (10-4))
+
+        second_half = np.logical_and(x_pixel[1] < x_r_1, x_r_1 < (10+4))
+        r_1[second_half] = ((10+4) - x_r_1[second_half]) / ((10+4) - 10)
+
         expected_calls = [
-            call(d, x, np.full(5, 1), np.arange(5), 2),
-            call(d, x, np.full(5, 2), np.arange(5), 2)
+            call(d, x, r_0, x_r_0, 2),
+            call(d, x, r_1, x_r_1, 2)
         ]
 
         for expected_call, real_call in zip(expected_calls, mock.call_args_list):
@@ -531,37 +784,24 @@ class TestBandIntegrate(unittest.TestCase):
             np.testing.assert_array_equal(real_call[0][3], expected_call[1][3])
             self.assertEqual(real_call[0][4], expected_call[1][4])
 
-        pass
+    def test_return_r_pixel(self):
+
+        x = np.arange(20)
+        x_pixel = np.array([4., 8., 12.])
+        width_pixel = np.array([2., 2., 4.])
+        r_pixel = bi.return_r_pixel(x_pixel, width_pixel, x, band_shape="tophat")
+
+        expected_r_pixel = np.zeros((3, 20))
+
+        expected_r_pixel[0, 3:6] = 1.
+        expected_r_pixel[1, 7:10] = 1.
+        expected_r_pixel[2, 10:15] = 1.
+
+        numpy.testing.assert_almost_equal(r_pixel, expected_r_pixel)
 
 
 if __name__ == "__main__":
     unittest.main()
-
-
-
-
-
-
-
-
-variable_dict = {
-    "measurement1": {
-        "dim": ["x1", "y2", "band1"],
-        "dtype": np.float32,
-        "attributes": {"units": "W m-2 sr-1 m-1"},
-     },
-    "measurement2": {
-        "dim": ["x1", "y2", "band2"],
-        "dtype": np.float32,
-        "attributes": {"units": "W m-2 sr-1 m-1"},
-     },
-    "band_blue": {
-        "dim": ["x", "y"],
-        "dtype": np.float32,
-        "attributes": {"units": "W m-2 sr-1 m-1"},
-     }
- }
-
 
 
 
