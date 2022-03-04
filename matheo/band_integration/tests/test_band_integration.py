@@ -248,11 +248,11 @@ TEST_SPECTRA = np.array(
 )
 
 
-def fake__band_int(d, x, r, x_r):
+def fake__band_int(d, x, r, x_r, rint_norm=True):
     return 1
 
 
-def fake_band_int(d, x, r, x_r, d_axis_x):
+def fake_band_int(d, x, r, x_r, d_axis_x, rint_norm=True):
     sli = [slice(None)] * d.ndim
     sli[d_axis_x] = 0
     sli = tuple(sli)
@@ -348,12 +348,31 @@ class TestBandIntegrate(unittest.TestCase):
 
         self.assertAlmostEqual(x_band, 51.1717, places=3)
 
+    def test__band_int_highresspec_nonorm(self):
+
+        x = np.arange(0, 100, 0.0001)
+        d = (0.02 * x) ** 3 + (-0.2 * x) ** 2 + (-3 * x) + 100
+
+        x_r = np.arange(30, 70, 0.001)
+        r = fd.f_triangle(x_r, 50, 5)
+
+        x_band = bi._band_int(d, x, r, x_r, rint_norm=False)
+
+        self.assertAlmostEqual(x_band, 51.1717 * 5, places=3)
+
     def test__band_int_regular_grid_r1d_d1d(self):
         d = np.array([4, 4, 4, 4, 4])
         x = np.arange(4)
         r = np.array([1, 1, 1, 1, 1])
 
         self.assertEqual(bi._band_int_regular_grid(d, x, r), 4)
+
+    def test__band_int_regular_grid_r1d_d1d_nonorm(self):
+        d = np.array([4, 4, 4, 4, 4])
+        x = np.arange(4)
+        r = np.array([1, 1, 1, 1, 1])
+
+        self.assertEqual(bi._band_int_regular_grid(d, x, r, rint_norm=False), 20.)
 
     def test__band_int_regular_grid_r2d_d2d(self):
         d = np.array(
