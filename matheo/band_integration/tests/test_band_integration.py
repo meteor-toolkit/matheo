@@ -808,7 +808,7 @@ class TestBandIntegrate(unittest.TestCase):
         x = np.arange(20)
         x_pixel = np.array([4., 8., 12.])
         width_pixel = np.array([2., 2., 4.])
-        r_pixel = bi.return_r_pixel(x_pixel, width_pixel, x, band_shape="tophat")
+        r_pixel = bi.return_r_pixel(x_pixel, width_pixel, x, fd.f_tophat)
 
         expected_r_pixel = np.zeros((3, 20))
 

@@ -11,7 +11,7 @@ from matheo.utils.punpy_util import func_with_unc
 from matheo.utils.function_def import iter_f, f_tophat, f_triangle, f_gaussian
 import numpy as np
 import scipy.sparse
-from typing import Optional, Union, Tuple, List, Iterable
+from typing import Optional, Union, Tuple, List, Iterable, Callable
 from matheo.interpolation.interpolation import interpolate
 
 
@@ -658,7 +658,7 @@ def return_r_pixel(
     x_pixel: np.ndarray,
     width_pixel: np.ndarray,
     x: np.ndarray,
-    band_shape: str = "triangle",
+    f: Callable,
     x_pixel_off: Optional[float] = None,
 ) -> np.ndarray:
     """
@@ -667,19 +667,11 @@ def return_r_pixel(
     :param x_pixel: centre of band response per pixel
     :param width_pixel: width of band response per pixel
     :param x: coordinates to define band response functions
+    :param f: functional shape of response band - a python function with the interface ``f(x, centre, width)``, where ``x`` is a numpy array of the x coordinates to define the function along, ``centre`` is the response band centre, and ``width`` is the response band width.
+    :param x_pixel_off: offset to pixel centre locations
 
     :return: pixel response function matrix
     """
-
-    # Get function
-    if band_shape == "triangle":
-        f = f_triangle
-    elif band_shape == "tophat":
-        f = f_tophat
-    elif band_shape == "gaussian":
-        f = f_gaussian
-    else:
-        raise ValueError("band_shape must be one of ['triangle', 'tophat', 'gaussian']")
 
     x_pixel_off = 0.0 if x_pixel_off is None else x_pixel_off
 
@@ -699,7 +691,7 @@ def pixel_int(
     u_x: Optional[Union[float, np.ndarray]] = None,
     u_x_pixel: Optional[Union[float, np.ndarray]] = None,
     u_width_pixel: Optional[Union[float, np.ndarray]] = None,
-    band_shape: str = "triangle",
+    band_shape: Union[Callable, str] = "triangle",
     r_sampling: Optional[float] = None,
     d_axis_x: int = 0,
     x_pixel_centre: Optional[float] = None,
@@ -716,7 +708,7 @@ def pixel_int(
     :param u_x: uncertainty in data coordinates
     :param u_x_pixel: uncertainty in centre of band response per pixel
     :param u_width_pixel: uncertainty in width of band response per pixel
-    :param band_shape: (default: ``triangle``) band shape - must be one of 'triangle', 'tophat', or 'gaussian'
+    :param band_shape: (default: ``triangle``) functional shape of response band - must be either a defined name, one of 'triangle', 'tophat', or 'gaussian', or a python function with the interface ``f(x, centre, width)``, where ``x`` is a numpy array of the x coordinates to define the function along, ``centre`` is the response band centre, and ``width`` is the response band width.
     :param r_sampling: x sampling interval for derived pixel band response functions (if omitted pixel band response functions defined along x, this results in an accelerated computation)
     :param d_axis_x: (default: ``0``) if d greater than 1D, specify axis pixels are along
     :param x_pixel_centre: centre of pixels in data coordinates, if there is an offset.
@@ -735,28 +727,21 @@ def pixel_int(
         else 0
     )
 
+    # Get function
     if band_shape == "triangle":
+        f = f_triangle
         xlim_width = 1
     elif band_shape == "tophat":
+        f = f_tophat
         xlim_width = 1
     elif band_shape == "gaussian":
+        f = f_gaussian
         xlim_width = 3
     else:
-        raise ValueError("band_shape must be one of ['triangle', 'tophat', 'gaussian']")
+        f = band_shape
+        xlim_width = 3
 
     if eval_iter:
-        # Get function
-        if band_shape == "triangle":
-            f = f_triangle
-        elif band_shape == "tophat":
-            f = f_tophat
-        elif band_shape == "gaussian":
-            f = f_gaussian
-        else:
-            raise ValueError(
-                "band_shape must be one of ['triangle', 'tophat', 'gaussian']"
-            )
-
         return iter_band_int(
             d,
             x,
@@ -786,7 +771,7 @@ def pixel_int(
             x_pixel,
             width_pixel,
             x_r_pixel,
-            band_shape="triangle",
+            f,
             x_pixel_off=x_pixel_off,
         )
 
