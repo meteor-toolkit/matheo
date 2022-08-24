@@ -12,8 +12,7 @@ from matheo.utils.function_def import iter_f, f_tophat, f_triangle, f_gaussian
 import numpy as np
 import scipy.sparse
 from typing import Optional, Union, Tuple, List, Iterable, Callable
-from comet_maths.interpolation.interpolation import interpolate
-
+from comet_maths import interpolate_1d
 
 __author__ = "Sam Hunt"
 __created__ = "30/7/2021"
@@ -87,7 +86,7 @@ def _band_int(d: np.ndarray, x: np.ndarray, r: np.ndarray, x_r: np.ndarray, rint
 
     # If spectrum lower res than the SRF - interpolate spectrum onto SRF wavelength coordinates before integration
     if res_r < res_d:
-        d_interp = interpolate(d, x, x_r)
+        d_interp = interpolate_1d(x, d, x_r)
 
         if rint_norm:
             norm_val = np.trapz(r, x_r)
@@ -102,7 +101,7 @@ def _band_int(d: np.ndarray, x: np.ndarray, r: np.ndarray, x_r: np.ndarray, rint
         d = d[idx]
         x = x[idx]
 
-        r_interp = interpolate(r, x_r, x)
+        r_interp = interpolate_1d(x_r, d, x)
 
         if rint_norm:
             norm_val = np.trapz(r_interp, x)
