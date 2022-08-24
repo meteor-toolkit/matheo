@@ -12,7 +12,7 @@ from matheo.utils.function_def import iter_f, f_tophat, f_triangle, f_gaussian
 import numpy as np
 import scipy.sparse
 from typing import Optional, Union, Tuple, List, Iterable, Callable
-from matheo.interpolation.interpolation import interpolate
+from comet_maths.interpolation.interpolation import interpolate
 
 
 __author__ = "Sam Hunt"
