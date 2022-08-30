@@ -95,13 +95,12 @@ def _band_int(d: np.ndarray, x: np.ndarray, r: np.ndarray, x_r: np.ndarray, rint
 
     # If spectrum lower res than the SRF - interpolate spectrum onto SRF wavelength coordinates before integration
     else:
-
         # First cut out spectrum to SRF wavelength range to avoid extrapolation errors in interpolation
         idx = np.where(np.logical_and(x < max(x_r), x > min(x_r)))
         d = d[idx]
         x = x[idx]
 
-        r_interp = interpolate_1d(x_r, d, x)
+        r_interp = interpolate_1d(x_r, r, x)
 
         if rint_norm:
             norm_val = np.trapz(r_interp, x)
