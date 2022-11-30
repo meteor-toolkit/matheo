@@ -7,3 +7,4 @@ comet_maths
 # for docs
 sphinx==3.0.1
 sphinx-rtd-theme==0.4.3
+Jinja2<3.1
