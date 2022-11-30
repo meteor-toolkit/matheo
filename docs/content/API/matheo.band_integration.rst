@@ -6,5 +6,7 @@ matheo.band_integration module
    :undoc-members:
    :show-inheritance:
 
+.. toctree::
+   :maxdepth: 4
    matheo.band_integration.band_integration
    matheo.band_integration.srf_utils

@@ -1,4 +1,4 @@
-matheo.band_integration module
+matheo.band_integration.srf_utils
 =================================
 
 .. automodule:: matheo.band_integration.srf_utils

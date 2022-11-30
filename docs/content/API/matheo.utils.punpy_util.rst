@@ -1,5 +1,5 @@
-matheo.utils module
-====================
+matheo.utils.punpy_utils
+===========================
 
 .. automodule:: matheo.utils.punpy_utils
    :members:
