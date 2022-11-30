@@ -27,6 +27,7 @@ API Documentation
    :maxdepth: 4
 
    content/API/matheo.band_integration
+   content/API/matheo.utils
 
 Indices and tables
 ==================
