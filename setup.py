@@ -6,6 +6,8 @@ from setuptools import find_packages
 from setuptools import setup
 import versioneer
 
+exec(open('matheo/_version.py').read())
+
 
 def read(filename):
     filename = os.path.join(os.path.dirname(__file__), filename)
@@ -13,15 +15,13 @@ def read(filename):
     with io.open(filename, mode="r", encoding="utf-8") as fd:
         return re.sub(text_type(r":[a-z]+:`~?(.*?)`"), text_type(r"``\1``"), fd.read())
 
-
 setup(
-    version=versioneer.get_version(),
-    cmdclass=versioneer.get_cmdclass(),
+    version=__version__,
     name="matheo",
     url="https://gitlab.npl.co.uk/eco/tools/matheo",
     license="None",
-    author="Kavya Jagan, Sam Hunt, Pieter De Vis",
-    author_email="kavya.jagan@npl.co.uk",
+    author="Sam Hunt, Pieter De Vis",
+    author_email="sam.hunt@npl.co.uk",
     description="Matheo is a python package with mathematical algorithms for use in earth observation data and tools.",
     long_description=read("README.rst"),
     packages=find_packages(exclude=("tests",)),
@@ -30,11 +30,7 @@ setup(
                       "scipy",
                       "xarray",
                       "pyspectral",
-                      "punpy @ git+https://gitlab-ci-token:Hk2jqEZTqX59aiAz19Tg@gitlab.npl.co.uk/eco/tools/punpy@v0.23#egg=punpy",
+                      "punpy",
                       ],
-    dependency_links=[
-        "git+https://gitlab-ci-token:Hk2jqEZTqX59aiAz19Tg@gitlab.npl.co.uk/eco/tools/punpy@v0.23#egg=punpy",
-    ],
-
     extras_require={"dev": ["pre-commit", "tox", "sphinx", "sphinx_rtd_theme"]},
 )
