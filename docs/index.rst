@@ -28,9 +28,6 @@ API Documentation
 
    content/API/matheo
 
-   content/API/matheo.band_integration
-   content/API/matheo.utils
-
 Indices and tables
 ==================
 
