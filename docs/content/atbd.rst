@@ -18,24 +18,25 @@ a tunable laser or a scanning monochromator.
 
 The band data observed by the sensor are given by:
 
-$`d_{\mathrm{int}} = \frac{\int r(x_r) d(x) \mathop{}\!\mathrm{d} x}{\int r(x_r) \mathop{}\!\mathrm{d} x} `$
+.. math::
+   d_{\mathrm{int}} = \frac{\int r(x_r) d(x) \!\mathrm{d} x}{\int r(x_r) \!\mathrm{d} x}
 
 where:
 
-* $`d`$ - data
-* $`x`$ - data coordinates
-* $`r`$ - band response function
-* $`x_r`$ - band response function coordinates
+* :math:`d` - data
+* :math:`x` - data coordinates
+* :math:`r` - band response function
+* :math:`x_r` - band response function coordinates
 
-In the case that $`x = x_r`$ and $`x`$ is evenly-sampled (i.e. a common spacing between every consecutive $`x`$ element), this reduces to:
+In the case that :math:`x = x_r` and :math:`x` is evenly-sampled (i.e. a common spacing between every consecutive :math:`x` element), this reduces to:
 
 
-$`d_{\mathrm{int}} = \frac{r \cdot d}{\sum r} `$
+.. math:: d_{\mathrm{int}} = \frac{r \cdot d}{\sum r}
 
-This formulation also applies for the case where $`r`$ defines multiple band response functions as an N x M array, where N is number of response bands and M is the length of $`x_r`$.
+This formulation also applies for the case where :math:`r` defines multiple band response functions as an N x M array, where N is number of response bands and M is the length of :math:`x_r`.
 
 Within matheo, the matheo.band_integration.band_int() function implements this spectral integration ove the SRF in an efficient way (automatically using either the above sum and dot product, or trapezium rule depending on whether the coordinates are evenly-sampled).
-Alternatively, the matheo.band_integration.spectral_band_int_sensor() function can be used to automatically look up the values of the SRF using pyspectral, rather than manually providing $`r`$ and $`x_r`$.
+Alternatively, the matheo.band_integration.spectral_band_int_sensor() function can be used to automatically look up the values of the SRF using pyspectral, rather than manually providing :math:`r` and :math:`x_r`.
 
 Uncertainties can also be provided on the data, coordinates and SRF, in which case these will be propagated to the band data observed by the sensor using the `punpy <https://punpy.readthedocs.io/en/latest/>`_ Monte Carlo approach.
 
