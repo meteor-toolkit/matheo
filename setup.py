@@ -4,10 +4,8 @@ import re
 
 from setuptools import find_packages
 from setuptools import setup
-import versioneer
 
 exec(open('matheo/_version.py').read())
-
 
 def read(filename):
     filename = os.path.join(os.path.dirname(__file__), filename)
