@@ -26,11 +26,9 @@ setup(
     long_description=read("README.rst"),
     packages=find_packages(exclude=("tests",)),
     install_requires=["numpy",
-                      "numdifftools",
-                      "scipy",
-                      "xarray",
                       "pyspectral",
                       "punpy",
+                      "comet_maths"
                       ],
     extras_require={"dev": ["pre-commit", "tox", "sphinx", "sphinx_rtd_theme"]},
 )
