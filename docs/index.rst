@@ -26,6 +26,8 @@ API Documentation
 .. toctree::
    :maxdepth: 4
 
+   content/API/matheo
+
    content/API/matheo.band_integration
    content/API/matheo.utils
 

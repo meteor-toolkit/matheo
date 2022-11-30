@@ -1,7 +1,7 @@
-matheo.utils module
+matheo API
 ====================
 
-.. automodule:: matheo.utils
+.. automodule:: matheo
    :members:
    :undoc-members:
    :show-inheritance:
@@ -12,5 +12,5 @@ Submodules
 .. toctree::
    :maxdepth: 4
 
-   matheo.utils.function_def
-   matheo.utils.punpy_util
+   matheo.band_integration
+   matheo.utils
