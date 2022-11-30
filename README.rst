@@ -6,19 +6,6 @@ Matheo is a python package with mathematical algorithms for use in earth observa
 Usage
 =====
 
-Virtual environment
--------------------
-
-It's always recommended to make a virtual environment for each of your python
-projects. Use your preferred virtual environment manager if you want and
-activate it for the rest of these commands. If you're unfamiliar, read
-https://realpython.com/python-virtual-environments-a-primer/. You can set one up
-using::
-
-    python -m venv venv
-
-and then activate it on Windows by using ``venv/Scripts/activate``. 
-
 Installation
 ------------
 
@@ -48,4 +35,4 @@ Licence
 Authors
 -------
 
-`matheo` was written by `Kavya Jagan, Sam Hunt, Pieter De Vis <kavya.jagan@npl.co.uk>`_.
+`matheo` was written by `Sam Hunt, Mattea Goalen, Maddie Stedman, Pieter De Vis`_.
