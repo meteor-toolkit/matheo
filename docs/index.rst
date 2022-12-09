@@ -17,6 +17,7 @@ It also has some utility that allows to define functions of various shapes.
    :maxdepth: 1
 
    content/getting_started
+   content/user_guide
    content/atbd
 
 
