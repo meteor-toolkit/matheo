@@ -13,6 +13,7 @@ Band integration
 Band integration can be done in matheo in a number of ways, depending on the input data one wants to use.
 The most general approach is to use the band_int() function, in which the user supplies the band response function(s) as numpy arrays.
 In the matheo band_integration arguments:
+
 * :math:`d` - the data to be band integrated
 * :math:`x` - the data coordinates
 * :math:`r` - band response function(s). For a single band, a 1D length-M array is required, where M is the length of ``x_r``. Multiple bands may be defined in an N x M array, where N is number of response bands.
@@ -41,9 +42,9 @@ Another way of performing band integration using matheo is with the pixel_int() 
 For this function, instead of providing the spectral response functions as numpy arrays,
 it is possible to just provide the centres, widths and shapes of the response functions, where:
 
-* :math:`x_pixel` - centre of band response per pixel
-* :math:`width_pixel` - width of band response per pixel
-* :math:`band_shape` - functional shape of response band - must be either a defined name, one of 'triangle', 'tophat', or 'gaussian', or a python function with the interface `f(x, centre, width)`, where `x` is a numpy array of the x coordinates to define the function along, `centre` is the response band centre, and `width` is the response band width. The default is `triangle`.
+* `x_pixel` - centre of band response per pixel
+* `width_pixel` - width of band response per pixel
+* `band_shape` - functional shape of response band - must be either a defined name, one of 'triangle', 'tophat', or 'gaussian', or a python function with the interface `f(x, centre, width)`, where `x` is a numpy array of the x coordinates to define the function along, `centre` is the response band centre, and `width` is the response band width. The default is `triangle`.
 
 For example::
 
@@ -76,10 +77,11 @@ it is possible to just specify the platform and sensor as a string::
 Note that here we specified the wavelength dimension in d using the d_axis_wl keyword.
 
 It is also possible to propagate uncertainties through all these functions. There are optional keywords such as:
-* :math:`u_d` - uncertainty on the data to be band integrated
-* :math:`u_x` - uncertainty on the data coordinates
-* :math:`u_r` - uncertainty on band response function(s). For a single band, a 1D length-M array is required, where M is the length of ``x_r``. Multiple bands may be defined in an N x M array, where N is number of response bands.
-* :math:`u_x_r` - uncertainty on band response function coordinates
+
+* `u_d` - uncertainty on the data to be band integrated
+* `u_x` - uncertainty on the data coordinates
+* `u_r` - uncertainty on band response function(s). For a single band, a 1D length-M array is required, where M is the length of ``x_r``. Multiple bands may be defined in an N x M array, where N is number of response bands.
+* `u_x_r` - uncertainty on band response function coordinates
 
 When any of these optional keyword are set, uncertainties are propagated using a Monte Carlo approach with 10000 iterations using `punpy <https://punpy.readthedocs.io/en/latest/>`_, which is part of the `CoMet toolkit <https://www.comet-toolkit.org/>`_.
 
