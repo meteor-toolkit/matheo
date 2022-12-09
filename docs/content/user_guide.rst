@@ -61,7 +61,7 @@ For example::
    )
 
 Finally, when doing spectral band integration for an earth observation sensor which is included in pyspectral (see list `here <https://pyspectral.readthedocs.io/en/master/platforms_supported.html>`_),
-it is possible to just specify the platform and sensor as a string::
+it is possible to just specify the platform and sensor as a string using the spectral_band_int_sensor() function::
 
    d = np.random.random((3, 4, 11))
    wl = np.arange(400, 510, 10)
@@ -85,7 +85,8 @@ It is also possible to propagate uncertainties through all these functions. Ther
 
 When any of these optional keyword are set, uncertainties are propagated using a Monte Carlo approach with 10000 iterations using `punpy <https://punpy.readthedocs.io/en/latest/>`_, which is part of the `CoMet toolkit <https://www.comet-toolkit.org/>`_.
 
-There are also a number of other optional keywords, for which we refer to the matheo API.
+There are also a number of additional functions (such as higher dimension version of the above, e.g. the band_int2ax() function) and other optional keywords.
+For explanations on these we refer to the matheo API.
 
 Utilities
 ############
