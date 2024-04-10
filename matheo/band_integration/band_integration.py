@@ -62,7 +62,9 @@ def get_x_offset(y, x, x_centre):
     return x_centre - x[np.argmax(y)]
 
 
-def _band_int(d: np.ndarray, x: np.ndarray, r: np.ndarray, x_r: np.ndarray, rint_norm: bool = True) -> float:
+def _band_int(
+    d: np.ndarray, x: np.ndarray, r: np.ndarray, x_r: np.ndarray, rint_norm: bool = True
+) -> float:
     """
     Returns integral of data array over a response band (i.e., d(x) * r(x_r))
 
@@ -109,7 +111,11 @@ def _band_int(d: np.ndarray, x: np.ndarray, r: np.ndarray, x_r: np.ndarray, rint
 
 
 def _band_int_regular_grid(
-    d: np.ndarray, x: np.ndarray, r: np.ndarray, d_axis_x: int = 0, rint_norm: bool = True
+    d: np.ndarray,
+    x: np.ndarray,
+    r: np.ndarray,
+    d_axis_x: int = 0,
+    rint_norm: bool = True,
 ) -> np.ndarray:
     """
     Returns integral of data array over a response band(s) defined along common, even-spaced coordinates (i.e., d(x) * r(x))
@@ -153,7 +159,12 @@ def _band_int_regular_grid(
 
 
 def _band_int_arr(
-    d: np.ndarray, x: np.ndarray, r: np.ndarray, x_r: np.ndarray, d_axis_x: int = 0, rint_norm: bool = False
+    d: np.ndarray,
+    x: np.ndarray,
+    r: np.ndarray,
+    x_r: np.ndarray,
+    d_axis_x: int = 0,
+    rint_norm: bool = False,
 ) -> np.ndarray:
     """
     Band integrates multi-dimensional data array along x axis.
@@ -183,7 +194,9 @@ def _band_int_arr(
         # If d has multiple dims, ensure integration done along correct axis
         if d.ndim == 1:
             return np.array([_band_int(d, x=x, r=r, x_r=x_r, rint_norm=rint_norm)])
-        return np.apply_along_axis(_band_int, d_axis_x, arr=d, x=x, r=r, x_r=x_r, rint_norm=rint_norm)
+        return np.apply_along_axis(
+            _band_int, d_axis_x, arr=d, x=x, r=r, x_r=x_r, rint_norm=rint_norm
+        )
 
     # If multiple band response functions defined, run multiple times
     elif r.ndim == 2:
@@ -204,7 +217,13 @@ def _band_int_arr(
                 sli = [slice(None)] * d_int.ndim
                 sli[d_axis_x] = i
                 d_int[tuple(sli)] = np.apply_along_axis(
-                    _band_int, d_axis_x, arr=d, x=x, r=r[i], x_r=x_r, rint_norm=rint_norm
+                    _band_int,
+                    d_axis_x,
+                    arr=d,
+                    x=x,
+                    r=r[i],
+                    x_r=x_r,
+                    rint_norm=rint_norm,
                 )
 
         return d_int
@@ -220,7 +239,7 @@ def _band_int2ax_arr(
     y_ry: np.ndarray,
     d_axis_x: int = 0,
     d_axis_y: int = 1,
-    rint_norm: bool = True
+    rint_norm: bool = True,
 ) -> np.ndarray:
     """
     Sequentially band integrates multi-dimensional data array along x axis and y axis
@@ -242,8 +261,12 @@ def _band_int2ax_arr(
     :return: band integrated data
     """
 
-    d_intx = _band_int_arr(d, x=x, r=rx, x_r=x_rx, d_axis_x=d_axis_x, rint_norm=rint_norm)
-    d_intx_inty = _band_int_arr(d_intx, x=y, r=ry, x_r=y_ry, d_axis_x=d_axis_y, rint_norm=rint_norm)
+    d_intx = _band_int_arr(
+        d, x=x, r=rx, x_r=x_rx, d_axis_x=d_axis_x, rint_norm=rint_norm
+    )
+    d_intx_inty = _band_int_arr(
+        d_intx, x=y, r=ry, x_r=y_ry, d_axis_x=d_axis_y, rint_norm=rint_norm
+    )
 
     return d_intx_inty
 
@@ -262,7 +285,7 @@ def _band_int3ax_arr(
     d_axis_x: int = 0,
     d_axis_y: int = 1,
     d_axis_z: int = 2,
-    rint_norm: bool = True
+    rint_norm: bool = True,
 ) -> np.ndarray:
     """
     Sequentially band integrates multi-dimensional data array along x, y and z axes
@@ -288,8 +311,12 @@ def _band_int3ax_arr(
     :return: band integrated data
     """
 
-    d_intx = _band_int_arr(d, x=x, r=rx, x_r=x_rx, d_axis_x=d_axis_x, rint_norm=rint_norm)
-    d_intx_inty = _band_int_arr(d_intx, x=y, r=ry, x_r=y_ry, d_axis_x=d_axis_y, rint_norm=rint_norm)
+    d_intx = _band_int_arr(
+        d, x=x, r=rx, x_r=x_rx, d_axis_x=d_axis_x, rint_norm=rint_norm
+    )
+    d_intx_inty = _band_int_arr(
+        d_intx, x=y, r=ry, x_r=y_ry, d_axis_x=d_axis_y, rint_norm=rint_norm
+    )
     d_intx_inty_intz = _band_int_arr(
         d_intx_inty, x=z, r=rz, x_r=z_rz, d_axis_x=d_axis_z, rint_norm=rint_norm
     )
@@ -308,7 +335,7 @@ def band_int(
     u_x: Union[None, float, np.ndarray] = None,
     u_r: Union[None, float, np.ndarray] = None,
     u_x_r: Union[None, float, np.ndarray] = None,
-    rint_norm: bool = True
+    rint_norm: bool = True,
 ) -> Union[
     float, np.ndarray, Tuple[Union[float, np.ndarray], Union[float, np.ndarray]]
 ]:
@@ -337,9 +364,17 @@ def band_int(
 
     x_r_off = get_x_offset(r, x_r, x_r_centre) if x_r_centre is not None else 0
 
+    if np.min(x_r + x_r_off) < np.min(x) or np.max(x_r + x_r_off) > np.max(x):
+        raise ValueError(
+            "The x_r coordinate range (%s-%s) exceeds the range of the x coordinate range (%s-%s), and the band integration can thus not be applied."
+            % (np.min(x_r), np.max(x_r), np.min(x), np.max(x))
+        )
+
     d_band, u_d_band = func_with_unc(
         _band_int_arr,
-        params=dict(d=d, x=x, r=r, x_r=x_r + x_r_off, d_axis_x=d_axis_x, rint_norm=rint_norm),
+        params=dict(
+            d=d, x=x, r=r, x_r=x_r + x_r_off, d_axis_x=d_axis_x, rint_norm=rint_norm
+        ),
         u_params=dict(d=u_d, x=u_x, r=u_r, x_r=u_x_r),
     )
 
@@ -368,7 +403,7 @@ def band_int2ax(
     u_x_rx: Union[None, float, np.ndarray] = None,
     u_ry: Union[None, float, np.ndarray] = None,
     u_y_ry: Union[None, float, np.ndarray] = None,
-    rint_norm: bool = True
+    rint_norm: bool = True,
 ) -> Union[
     float, np.ndarray, Tuple[Union[float, np.ndarray], Union[float, np.ndarray]]
 ]:
@@ -418,7 +453,7 @@ def band_int2ax(
             y_ry=y_ry + y_ry_off,
             d_axis_x=d_axis_x,
             d_axis_y=d_axis_y,
-            rint_norm=rint_norm
+            rint_norm=rint_norm,
         ),
         u_params=dict(d=u_d, x=u_x, y=u_y, rx=u_rx, x_rx=u_x_rx, ry=u_ry, y_ry=u_y_ry),
     )
@@ -456,7 +491,7 @@ def band_int3ax(
     u_y_ry: Union[None, float, np.ndarray] = None,
     u_rz: Union[None, float, np.ndarray] = None,
     u_z_rz: Union[None, float, np.ndarray] = None,
-    rint_norm: bool = True
+    rint_norm: bool = True,
 ) -> Union[
     float, np.ndarray, Tuple[Union[float, np.ndarray], Union[float, np.ndarray]]
 ]:
@@ -517,7 +552,7 @@ def band_int3ax(
         d_axis_x=d_axis_x,
         d_axis_y=d_axis_y,
         d_axis_z=d_axis_z,
-        rint_norm=rint_norm
+        rint_norm=rint_norm,
     )
 
     u_params = dict(
@@ -550,7 +585,7 @@ def iter_band_int(
     u_x: Optional[Union[float, np.ndarray]] = None,
     u_r: Optional[Union[float, np.ndarray]] = None,
     u_x_r: Optional[Union[float, np.ndarray]] = None,
-    rint_norm: Optional[bool] = True
+    rint_norm: Optional[bool] = True,
 ) -> Union[
     float, np.ndarray, Tuple[Union[float, np.ndarray], Union[float, np.ndarray]]
 ]:
@@ -591,7 +626,7 @@ def iter_band_int(
             d_band[sli] = band_int(d, x, r_i, x_r_i, d_axis_x, rint_norm=rint_norm)
         else:
             d_band[sli], u_d_band[sli] = band_int(
-                d, x, r_i, x_r_i, d_axis_x, u_d, u_x, u_r, u_x_r, rint_norm=rint_norm
+                d, x, r_i, x_r_i, d_axis_x, u_d=u_d, u_x=u_x, u_r=u_r, u_x_r=u_x_r, rint_norm=rint_norm
             )
 
     if not u_d_band.any():
@@ -648,7 +683,7 @@ def spectral_band_int_sensor(
     if (u_d is None) and (u_wl is None):
         return iter_band_int(d, wl, iter_srf, d_axis_wl), band_centres
 
-    d_band, u_d_band = iter_band_int(d, wl, iter_srf, d_axis_wl)
+    d_band, u_d_band = iter_band_int(d, wl, iter_srf, d_axis_wl, u_d=u_d, u_x=u_wl)
     return d_band, band_centres, u_d_band
 
 

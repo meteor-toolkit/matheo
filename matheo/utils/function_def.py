@@ -97,7 +97,7 @@ def repeat_f(
     widths: np.ndarray,
     normalise: bool = False,
     x_sampling: float = 0.01,
-    xlim_width: float = 3.0
+    xlim_width: float = 3.0,
 ) -> Tuple[np.ndarray, np.ndarray]:
     """
     Evaluates repeating functions along a coordinate axis
@@ -123,7 +123,7 @@ def repeat_f(
         widths=widths,
         normalise=normalise,
         x_sampling=x_sampling,
-        xlim_width=xlim_width
+        xlim_width=xlim_width,
     )
 
     return fs.return_fs()
@@ -135,7 +135,7 @@ def iter_f(
     widths: np.ndarray,
     normalise: bool = False,
     x_sampling: float = 0.01,
-    xlim_width: float = 3.0
+    xlim_width: float = 3.0,
 ) -> Iterator:
     """
     Returns iterator to evaluate repeating functions along a coordinate axis
@@ -159,7 +159,7 @@ def iter_f(
         widths=widths,
         normalise=normalise,
         x_sampling=x_sampling,
-        xlim_width=xlim_width
+        xlim_width=xlim_width,
     )
 
     return iter(fs)
@@ -184,7 +184,7 @@ class RepeatingFuncUtil:
         widths: np.ndarray,
         normalise: bool = False,
         x_sampling: float = 0.01,
-        xlim_width: float = 3.0
+        xlim_width: float = 3.0,
     ):
 
         # Set attributes from arguments

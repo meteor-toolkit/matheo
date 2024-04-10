@@ -5,5 +5,5 @@ from matheo.band_integration.band_integration import (
     spectral_band_int_sensor,
     pixel_int,
     band_int2d,
-    pixel_int2d
+    pixel_int2d,
 )

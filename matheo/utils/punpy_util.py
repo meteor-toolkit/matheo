@@ -27,7 +27,9 @@ def _max_dim(arrays: Iterable[np.ndarray]) -> int:
     return max(dims)
 
 
-def _unc_to_dim(unc: Union[float, np.ndarray], dim: int, x: np.ndarray = None, x_len: int = None) -> np.ndarray:
+def _unc_to_dim(
+    unc: Union[float, np.ndarray], dim: int, x: np.ndarray = None, x_len: int = None
+) -> np.ndarray:
     """
     Scales up uncertainty to given dimension (e.g. float to full vector, vector to diagonal maxtrix)
 
@@ -67,10 +69,10 @@ def _unc_to_dim(unc: Union[float, np.ndarray], dim: int, x: np.ndarray = None, x
 
 
 def func_with_unc(
-        f: Callable,
-        params: Dict[str, Union[float, np.ndarray]],
-        u_params: Dict[str, Union[None, float, np.ndarray]],
-        parallel: bool = True,
+    f: Callable,
+    params: Dict[str, Union[float, np.ndarray]],
+    u_params: Dict[str, Union[None, float, np.ndarray]],
+    parallel: bool = True,
 ) -> Tuple[Union[float, np.ndarray], Union[None, float, np.ndarray]]:
     """
     Evaluate function and uncertainties using Monte Carlo method
@@ -96,7 +98,7 @@ def func_with_unc(
     y = f(**params)
 
     # if no uncertainties return only in band spectrum
-    if all(v == None for v in u_params.values()):
+    if all(v is None for v in u_params.values()):
         return y, None
 
     # Add None's for any undefined uncertainties
@@ -108,7 +110,10 @@ def func_with_unc(
     if unc_dim != 2:
         unc_dim = 1
 
-    u_params = dict((k, _unc_to_dim(u, unc_dim, x=v)) if (u is not None) else (k, u) for (k, u), v in zip(u_params.items(), params.values()))
+    u_params = dict(
+        (k, _unc_to_dim(u, unc_dim, x=v)) if (u is not None) else (k, u)
+        for (k, u), v in zip(u_params.items(), params.values())
+    )
 
     # Propagate uncertainties
     if parallel:

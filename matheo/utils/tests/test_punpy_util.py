@@ -47,26 +47,26 @@ class TestPunpyUtils(unittest.TestCase):
 
     def test_func_with_unc_None(self):
         def poly(x1, x2):
-            return x1 ** 2 + 3 * x2
+            return x1**2 + 3 * x2
 
         y, u_y = func_with_unc(
             poly,
-            params={"x1": np.array([1,2,3]), "x2": np.array([1,2,3])},
-            u_params={"x1": None, "x2": None}
+            params={"x1": np.array([1, 2, 3]), "x2": np.array([1, 2, 3])},
+            u_params={"x1": None, "x2": None},
         )
 
-        np.testing.assert_array_equal(y, np.array([4,10,18]))
+        np.testing.assert_array_equal(y, np.array([4, 10, 18]))
         self.assertIsNone(u_y)
 
     def test_func_with_unc(self):
         def poly(x1, x2, x3):
-            return x1 ** 2 + 3 * x2 + x3
+            return x1**2 + 3 * x2 + x3
 
         y, u_y = func_with_unc(
             poly,
             params={"x1": np.array([1, 2, 3]), "x2": np.array([1, 2, 3]), "x3": 1},
             u_params={"x1": 0.1, "x2": np.array([3, 3, 3])},
-            parallel=False  # have to test punpy not in parallel for some reason...
+            parallel=False,  # have to test punpy not in parallel for some reason...
         )
 
         np.testing.assert_array_equal(y, np.array([5, 11, 19]))
