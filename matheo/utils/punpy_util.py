@@ -72,7 +72,7 @@ def func_with_unc(
     f: Callable,
     params: Dict[str, Union[float, np.ndarray]],
     u_params: Dict[str, Union[None, float, np.ndarray]],
-    parallel: bool = True,
+    parallel: bool = False,
 ) -> Tuple[Union[float, np.ndarray], Union[None, float, np.ndarray]]:
     """
     Evaluate function and uncertainties using Monte Carlo method
@@ -117,9 +117,9 @@ def func_with_unc(
 
     # Propagate uncertainties
     if parallel:
-        prop = MCPropagation(10000, parallel_cores=multiprocessing.cpu_count())
+        prop = MCPropagation(200, parallel_cores=multiprocessing.cpu_count())
     else:
-        prop = MCPropagation(10000)
+        prop = MCPropagation(200, parallel_cores=1)
 
     x = [v for v in params.values()]
     u_x = [u_params[k] for k in params.keys()]
