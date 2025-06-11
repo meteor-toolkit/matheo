@@ -370,7 +370,7 @@ def band_int(
             "The x_r coordinate range (%s-%s) exceeds the range of the x coordinate range (%s-%s), and the band integration can thus not be applied."
             % (np.min(x_r), np.max(x_r), np.min(x), np.max(x))
         )
-        return np.NaN
+        return np.nan
 
     d_band, u_d_band = func_with_unc(
         _band_int_arr,
