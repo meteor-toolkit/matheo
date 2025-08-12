@@ -25,7 +25,7 @@ setup(
     description="Matheo is a python package with mathematical algorithms for use in earth observation data and tools",
     long_description=read("README.md"),
     packages=find_packages(exclude=("tests",)),
-    install_requires=["pyspectral","comet_maths>=1.0.5","punpy>=1.0.4"],
+    install_requires=["pyspectral", "comet_maths>=1.0.5", "punpy>=1.0.4"],
     extras_require={
         "dev": [
             "pre-commit",
@@ -35,5 +35,6 @@ setup(
             "sphinx_book_theme",
             "ipython",
             "sphinx_autosummary_accessors",
-        ],}
+        ],
+    },
 )
