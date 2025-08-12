@@ -14,7 +14,7 @@ For more information visit our [documentation](https://matheo.readthedocs.io/en/
 ## License
 
 matheo is free software licensed under the
-[GNU Public License (v3)](./LICENSE).
+[GNU Lesser Public License (v3)](./LICENSE).
 
 ## Acknowledgements
 

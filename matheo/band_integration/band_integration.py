@@ -1,6 +1,7 @@
 """
 Functions to band integrate spectra for given spectral response function.
 """
+
 import warnings
 
 from matheo.band_integration.srf_utils import (
@@ -370,7 +371,7 @@ def band_int(
             "The x_r coordinate range (%s-%s) exceeds the range of the x coordinate range (%s-%s), and the band integration can thus not be applied."
             % (np.min(x_r), np.max(x_r), np.min(x), np.max(x))
         )
-        return np.NaN
+        return np.nan
 
     d_band, u_d_band = func_with_unc(
         _band_int_arr,
@@ -628,7 +629,16 @@ def iter_band_int(
             d_band[sli] = band_int(d, x, r_i, x_r_i, d_axis_x, rint_norm=rint_norm)
         else:
             d_band[sli], u_d_band[sli] = band_int(
-                d, x, r_i, x_r_i, d_axis_x, u_d=u_d, u_x=u_x, u_r=u_r, u_x_r=u_x_r, rint_norm=rint_norm
+                d,
+                x,
+                r_i,
+                x_r_i,
+                d_axis_x,
+                u_d=u_d,
+                u_x=u_x,
+                u_r=u_r,
+                u_x_r=u_x_r,
+                rint_norm=rint_norm,
             )
 
     if not u_d_band.any():
