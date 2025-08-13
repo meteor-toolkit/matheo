@@ -26,7 +26,7 @@ setup(
     long_description=read("README.md"),
     packages=find_packages(exclude=("tests",)),
     python_requires='>=3.10',
-    install_requires=["pyspectral", "punpy>=1.0.7"],
+    install_requires=["pyspectral", "punpy>=1.0.7", "pyproj"],
     extras_require={
         "dev": [
             "pre-commit",
