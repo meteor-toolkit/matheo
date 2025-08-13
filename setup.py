@@ -18,11 +18,11 @@ def read(filename):
 setup(
     version=__version__,
     name="matheo",
-    url="https://gitlab.npl.co.uk/eco/tools/matheo",
+    url="https://github.com/meteor-toolkit/matheo",
     license="None",
     author="Sam Hunt, Pieter De Vis",
     author_email="sam.hunt@npl.co.uk",
-    description="Matheo is a python package with mathematical algorithms for use in earth observation data and tools",
+    description="Matheo is a python package with mathematical algorithms for use in Earth observation data and tools",
     long_description=read("README.md"),
     packages=find_packages(exclude=("tests",)),
     install_requires=["pyspectral", "comet_maths>=1.0.5", "punpy>=1.0.4"],

@@ -20,24 +20,33 @@ __author__ = "Sam Hunt"
 __created__ = "30/7/2021"
 
 
-def cutout_nonzero(y, x, buffer=0.2):
+def cutout_nonzero(
+    y: np.ndarray,
+    x: np.ndarray,
+    buffer: Optional[Union[float, int]] = 0.2,
+    relative_threshold: Optional[Union[float, int]] = 0.0,
+) -> Tuple[np.ndarray, np.ndarray, List[int]]:
     """
     Returns continuous non-zero part of function y(x)
 
-    :type y: numpy.ndarray
     :param y: function data values
-
-    :type x: numpy.ndarray
     :param x: function coordinate data values
-
-    :type buffer: float
     :param buffer: fraction of non-zero section of y to include as buffer on either side (default: 0.2)
+    :param relative_threshold: (default: 0.) relative threshold to define non-zero region, as fraction of maximum value in y.
+    :return: y, x, [imin, imax] - where imin and imax are indices of the start and end of the non-zero region
     """
-
     # Find extent of non-zero region
-    idx = np.nonzero(y)
-    imin = min(idx[0])
-    imax = max(idx[0]) + 1
+    max_val = max(y)
+    idx_range = np.zeros(len(y)) * np.nan
+
+    for idx, val in enumerate(y):
+        if val > relative_threshold * max_val:
+            idx_range[idx] = idx
+
+    idx_range = idx_range[np.isfinite(idx_range)]
+
+    imin = int(min(idx_range))
+    imax = int(max(idx_range)) + 1
 
     # Determine buffer
     width = imax - imin
