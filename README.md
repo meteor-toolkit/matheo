@@ -1,6 +1,6 @@
 # matheo
 
-Matheo is a python package with mathematical algorithms for use in earth observation data and tools.
+Matheo is a python package with mathematical algorithms for use in Earth observation data and tools.
 
 
 ## Installation
