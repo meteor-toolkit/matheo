@@ -74,7 +74,12 @@ def get_x_offset(y, x, x_centre):
 
 
 def _band_int(
-    d: np.ndarray, x: np.ndarray, r: np.ndarray, x_r: np.ndarray, rint_norm: bool = True, **kwargs: Optional[dict]
+    d: np.ndarray,
+    x: np.ndarray,
+    r: np.ndarray,
+    x_r: np.ndarray,
+    rint_norm: bool = True,
+    **kwargs: Optional[dict]
 ) -> float:
     """
     Returns integral of data array over a response band (i.e., d(x) * r(x_r))
@@ -206,7 +211,9 @@ def _band_int_arr(
 
         # If d has multiple dims, ensure integration done along correct axis
         if d.ndim == 1:
-            return np.array([_band_int(d, x=x, r=r, x_r=x_r, rint_norm=rint_norm, **kwargs)])
+            return np.array(
+                [_band_int(d, x=x, r=r, x_r=x_r, rint_norm=rint_norm, **kwargs)]
+            )
         return np.apply_along_axis(
             _band_int, d_axis_x, arr=d, x=x, r=r, x_r=x_r, rint_norm=rint_norm, **kwargs
         )
@@ -218,7 +225,9 @@ def _band_int_arr(
         if d.ndim == 1:
             d_int = np.zeros(len(r))
             for i in range(len(d_int)):
-                d_int[i] = _band_int(d, x=x, r=r[i], x_r=x_r, rint_norm=rint_norm, **kwargs)
+                d_int[i] = _band_int(
+                    d, x=x, r=r[i], x_r=x_r, rint_norm=rint_norm, **kwargs
+                )
 
         else:
             # (this bit could probably be accelerated)
@@ -334,7 +343,13 @@ def _band_int3ax_arr(
         d_intx, x=y, r=ry, x_r=y_ry, d_axis_x=d_axis_y, rint_norm=rint_norm, **kwargs
     )
     d_intx_inty_intz = _band_int_arr(
-        d_intx_inty, x=z, r=rz, x_r=z_rz, d_axis_x=d_axis_z, rint_norm=rint_norm, **kwargs
+        d_intx_inty,
+        x=z,
+        r=rz,
+        x_r=z_rz,
+        d_axis_x=d_axis_z,
+        rint_norm=rint_norm,
+        **kwargs,
     )
 
     return d_intx_inty_intz
@@ -391,7 +406,13 @@ def band_int(
     d_band, u_d_band = func_with_unc(
         _band_int_arr,
         params=dict(
-            d=d, x=x, r=r, x_r=x_r + x_r_off, d_axis_x=d_axis_x, rint_norm=rint_norm, **kwargs
+            d=d,
+            x=x,
+            r=r,
+            x_r=x_r + x_r_off,
+            d_axis_x=d_axis_x,
+            rint_norm=rint_norm,
+            **kwargs,
         ),
         u_params=dict(d=u_d, x=u_x, r=u_r, x_r=u_x_r),
     )
@@ -473,7 +494,7 @@ def band_int2ax(
             d_axis_x=d_axis_x,
             d_axis_y=d_axis_y,
             rint_norm=rint_norm,
-            **kwargs
+            **kwargs,
         ),
         u_params=dict(d=u_d, x=u_x, y=u_y, rx=u_rx, x_rx=u_x_rx, ry=u_ry, y_ry=u_y_ry),
     )
@@ -646,7 +667,9 @@ def iter_band_int(
 
         # evaluate band integral
         if (u_d is None) and (u_x is None) and (u_r is None) and (u_x_r is None):
-            d_band[sli] = band_int(d, x, r_i, x_r_i, d_axis_x, rint_norm=rint_norm, **kwargs)
+            d_band[sli] = band_int(
+                d, x, r_i, x_r_i, d_axis_x, rint_norm=rint_norm, **kwargs
+            )
         else:
             d_band[sli], u_d_band[sli] = band_int(
                 d,
@@ -717,7 +740,9 @@ def spectral_band_int_sensor(
     if (u_d is None) and (u_wl is None):
         return iter_band_int(d, wl, iter_srf, d_axis_wl, **kwargs), band_centres
 
-    d_band, u_d_band = iter_band_int(d, wl, iter_srf, d_axis_wl, u_d=u_d, u_x=u_wl, **kwargs)
+    d_band, u_d_band = iter_band_int(
+        d, wl, iter_srf, d_axis_wl, u_d=u_d, u_x=u_wl, **kwargs
+    )
     return d_band, band_centres, u_d_band
 
 
@@ -817,7 +842,7 @@ def pixel_int(
             d_axis_x,
             u_d,
             u_x,
-            **kwargs
+            **kwargs,
         )
 
     else:
