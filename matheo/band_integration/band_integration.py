@@ -33,11 +33,18 @@ def cutout_nonzero(y, x, buffer=0.2):
     :type buffer: float
     :param buffer: fraction of non-zero section of y to include as buffer on either side (default: 0.2)
     """
-
     # Find extent of non-zero region
-    idx = np.nonzero(y)
-    imin = min(idx[0])
-    imax = max(idx[0]) + 1
+    max_val = max(y)
+    idx_range = np.zeros(len(y)) * np.nan
+
+    for idx, val in enumerate(y):
+        if val > 0.1 * max_val:
+            idx_range[idx] = idx
+
+    idx_range = idx_range[np.isfinite(idx_range)]
+
+    imin = int(min(idx_range))
+    imax = int(max(idx_range)) + 1
 
     # Determine buffer
     width = imax - imin
