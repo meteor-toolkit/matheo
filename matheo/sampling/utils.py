@@ -1,6 +1,5 @@
 """Module of utility functions for algorithms"""
 
-
 from typing import Tuple
 
 from pyproj import Transformer, CRS

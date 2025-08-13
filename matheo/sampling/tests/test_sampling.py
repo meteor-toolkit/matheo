@@ -1,6 +1,7 @@
 """
 Tests for sampling module
 """
+
 import numpy.testing
 
 import unittest
