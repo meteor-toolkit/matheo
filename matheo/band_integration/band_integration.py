@@ -23,8 +23,8 @@ __created__ = "30/7/2021"
 def cutout_nonzero(
     y: np.ndarray,
     x: np.ndarray,
-    buffer: Union[float, int] = 0.2,
-    relative_threshold: Union[float, int] = 0.0,
+    buffer: Optional[Union[float, int]] = 0.2,
+    relative_threshold: Optional[Union[float, int]] = 0.0,
 ) -> Tuple[np.ndarray, np.ndarray, List[int]]:
     """
     Returns continuous non-zero part of function y(x)
