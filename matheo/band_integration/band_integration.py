@@ -417,6 +417,12 @@ def band_int(
         u_params=dict(d=u_d, x=u_x, r=u_r, x_r=u_x_r),
     )
 
+    if hasattr(d_band, "size") and d_band.size == 1:
+        d_band = d_band.item()
+
+    if hasattr(u_d_band, "size") and u_d_band.size == 1:
+        u_d_band = u_d_band.item()
+
     if u_d_band is None:
         return d_band
 
