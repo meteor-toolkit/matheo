@@ -814,7 +814,9 @@ class TestBandIntegrate(unittest.TestCase):
             )
             self.assertEqual(real_call[0][4], expected_call[1][4])
 
-    def test_spectral_band_int_sensor_nomock(self,):
+    def test_spectral_band_int_sensor_nomock(
+        self,
+    ):
         d = np.zeros((3, 4, 16))
         wl = np.arange(400, 560, 10)
 
@@ -866,7 +868,6 @@ class TestBandIntegrate(unittest.TestCase):
         mock_bi.assert_called_once_with(
             d=d, x=x, r=mock_rrp.return_value, x_r=x, d_axis_x=d_axis_x
         )
-
 
     @patch("matheo.band_integration.band_integration.return_r_pixel")
     @patch("matheo.band_integration.band_integration.band_int")
